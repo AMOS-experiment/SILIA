@@ -36,11 +36,11 @@ def signal(frequencies, channels, time):
 			if i < len(channels)/5:
 				row += [noise(1, 'Gaussian')]
 			elif i >= len(channels)/5 and i < 2 * len(channels)/5:
-				row += [np.sin(2 * np.pi * frequencies[0] * t) + noise(1, 'Gaussian')]
+				row += [np.sin(2 * np.pi * frequencies[0] * t) + 10 * i]
 			elif i >= 2 * len(channels)/5 and i < 3 * len(channels)/5:
 				row += [noise(1, 'Gaussian')]
 			elif i >= 3 * len(channels)/5 and i < 4 * len(channels)/5:
-				row += [np.sin(2 * np.pi * frequencies[1] * t) + noise(1, 'Gaussian')]
+				row += [np.sin(2 * np.pi * frequencies[1] * t) + i * noise(1, 'Gaussian')]
 			else:
 				row += [noise(1, 'Gaussian')]
 			i += 1

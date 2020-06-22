@@ -328,8 +328,10 @@ def main():
 	#Fits the reference signal to a sine wave.
 
 	ref_vals = rf.setUp(times, frequencies, refFreq)
-	filtered = np.zeros(len(channels))
-	filtered_phaseShift = np.zeros(len(channels))
+	#filtered = np.zeros(len(channels))
+	#filtered_phaseShift = np.zeros(len(channels))
+	filtered = []
+	filtered_phaseShift = []
 	for fit_params in ref_vals:
 		est_freq, est_phase, est_offset, est_amp = fit_params[0], fit_params[1], fit_params[2], fit_params[3]
 
@@ -340,12 +342,16 @@ def main():
 		time = mixed[:,0]
 
 		curr_filtered, curr_filtered_phaseShift = apply_lowpass(mixed, mixed_phaseShift, time, cutoff)
-		filtered  = np.add(curr_filtered, filtered)
-		filtered_phaseShift = np.add(curr_filtered_phaseShift, filtered_phaseShift)
-	if (polar == "T"):
-		polarOutput(filtered, filtered_phaseShift, channels, time)
-	else:
-		cartesianOutput(filtered, filtered_phaseShift, channels, time)
+		filtered.append(curr_filtered)
+		filtered_phaseShift.append(curr_filtered_phaseShift)
+
+	i = 0
+	while i < len(filtered):
+		if (polar == "T"):
+			polarOutput(filtered[i], filtered_phaseShift[i], channels, time)
+		else:
+			cartesianOutput(filtered[i], filtered_phaseShift[i], channels, time)
+		i += 1
 
 if __name__ == "__main__":
 	main()
