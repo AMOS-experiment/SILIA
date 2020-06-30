@@ -29,20 +29,26 @@ def channels():
 def signal(frequencies, channels, time):
 	"""Returns signal with noise at the frequencies"""
 	signal = []
+
 	for t in time:
 		row = [t]
 		i =0
+		"""
 		while i < len(channels):
 			if i < len(channels)/5:
 				row += [noise(1, 'Gaussian')]
 			elif i >= len(channels)/5 and i < 2 * len(channels)/5:
-				row += [np.sin(2 * np.pi * frequencies[0] * t) + 10 * i]
+				row += [np.sin(2 * np.pi * frequencies[0] * t) + noise(1, 'Gaussian')]
 			elif i >= 2 * len(channels)/5 and i < 3 * len(channels)/5:
 				row += [noise(1, 'Gaussian')]
 			elif i >= 3 * len(channels)/5 and i < 4 * len(channels)/5:
-				row += [np.sin(2 * np.pi * frequencies[1] * t) + i * noise(1, 'Gaussian')]
+				row += [np.sin(2 * np.pi * frequencies[1] * t) + noise(1, 'Gaussian')]
 			else:
 				row += [noise(1, 'Gaussian')]
 			i += 1
-		signal += [row] 
+		"""
+		while i < len(channels):
+			row += [np.sin(2 * np.pi * (frequencies[0] - 5 + 0.1 * i) * t)]
+			i += 1
+		signal += [row]
 	return signal

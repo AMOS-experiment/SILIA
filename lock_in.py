@@ -15,12 +15,12 @@ polar = 'T'
 """
 Cutoff frequency for low pass filter (Hz)
 """
-cutoff = 0.5
+cutoff = 1
 
 """
 Frequencies to lock into
 """
-frequencies = [50, 100]
+frequencies = [100]
 """
 Sampling rate of the reference signal DaQ
 """
@@ -29,7 +29,7 @@ refFreq = simulate_signal.refFreq()
 """
 The relative path to the directory where the data is being stored.
 """
-data_dir = 'results/'
+data_dir = '../Lock-in_sim_results/freq_drift_test/1_cutoff/'
 
 """
 1D Array of floats representing each channel.
@@ -43,7 +43,6 @@ Each row is a set of intensity values for a timestamp.
 """
 times = np.arange(0, 1.024 * 8, 0.001)
 intensities = simulate_signal.signal(frequencies, channels, times)
-data_dir = 'results/'
 os.mkdir(data_dir)
 with open(data_dir + 'intensities.csv', 'w', newline = '') as csvfile:
     writer = csv.writer(csvfile, delimiter = ',')
@@ -161,7 +160,7 @@ def fft_lowpass(data, cutoff, f_s, time):
 	fourier = fft(data)
 	frequencies = np.fft.fftfreq(len(time)) * f_s
 	index_upper = 0
-	index_lower = len(fourier) - 1    
+	index_lower = len(fourier) - 1  
 	for index, freq in enumerate(frequencies):
 		if freq > cutoff:
 			index_upper = index
@@ -169,13 +168,13 @@ def fft_lowpass(data, cutoff, f_s, time):
 
 	for index, freq in enumerate(frequencies):
 		if (freq < 0 and freq > -1 * cutoff):
-			index_lower = index
+			index_lower = index - 1 #Subtracting 1 from index to ensure upper and lower frequencies are the same
 			break
 	for index, freq in enumerate(frequencies):
 		if index < index_lower and index > index_upper:
 			fourier[index] = 0
 	filtered_signal = ifft(fourier)
-	return filtered_signal
+	return fourier
 
 
 def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
@@ -270,7 +269,7 @@ def cartesianOutput(values, values_phaseShift, channels, times):
 	file2.close()
 
 
-def polarOutput(values, values_phaseShift, channels, times):
+def polarOutput(values, values_phaseShift, channels, times, freq):
 	"""
 	Converts lock in output to polar and writes it to csv 
 	"lock_in_values_r.csv" and "lock_in_values_theta.csv".
@@ -288,7 +287,6 @@ def polarOutput(values, values_phaseShift, channels, times):
 	times : 1D array
 		The timestamps for each signal measurement.
 	"""
-	chunk_time = times[-1]
 	file1 = open(data_dir + "lock_in_values_r.csv", "a+")
 	file2 = open(data_dir + "lock_in_values_theta.csv", "a+")
 	if (os.stat(data_dir + "lock_in_values_r.csv").st_size == 0):
@@ -297,8 +295,8 @@ def polarOutput(values, values_phaseShift, channels, times):
 			file2.write("," + str(channel))
 		file1.write("\n")
 		file2.write("\n")
-	file1.write(str(chunk_time) + ",")
-	file2.write(str(chunk_time) + ",")
+	file1.write(str(freq) + ",")
+	file2.write(str(freq) + ",")
 	n = len(values)
 	i = 0
 	while (i < n):
@@ -348,7 +346,8 @@ def main():
 	i = 0
 	while i < len(filtered):
 		if (polar == "T"):
-			polarOutput(filtered[i], filtered_phaseShift[i], channels, time)
+			freq = frequencies[i]
+			polarOutput(filtered[i], filtered_phaseShift[i], channels, time, freq)
 		else:
 			cartesianOutput(filtered[i], filtered_phaseShift[i], channels, time)
 		i += 1
