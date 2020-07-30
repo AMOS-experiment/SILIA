@@ -33,7 +33,6 @@ def signal(frequencies, channels, time):
 	for t in time:
 		row = [t]
 		i =0
-		
 		while i < len(channels):
 			if i < len(channels)/5:
 				row += [noise(1, 'Gaussian')]
@@ -52,6 +51,7 @@ def signal(frequencies, channels, time):
 		while i < len(channels):
 			row += [np.sin(2 * np.pi * (frequencies[0] - 5 + 0.1 * i) * t)]
 			i += 1
-		signal += [row]
 		"""
+		signal += [row]
+		
 	return signal

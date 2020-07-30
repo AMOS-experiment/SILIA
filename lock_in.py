@@ -24,7 +24,7 @@ refFreq = simulate_signal.refFreq()
 """
 The relative path to the directory where the data is being stored.
 """
-data_dir = '../Lock-in_sim_results/Two-Freq/new/'
+data_dir = '../Lock-in_sim_results/Two-Freq/new_test_75_125/'
 
 """
 1D Array of floats representing each channel.
@@ -215,7 +215,7 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
 	return r, theta
 
 
-def polarOutput(values, values_phaseShift, channels, times, freq):
+def polarOutput(magnitudes, angles, channels, times, freq):
 	"""
 	Converts lock in output to polar and writes it to csv 
 	"lock_in_values_r.csv" and "lock_in_values_theta.csv".
@@ -243,13 +243,11 @@ def polarOutput(values, values_phaseShift, channels, times, freq):
 		file2.write("\n")
 	file1.write(str(freq) + ",")
 	file2.write(str(freq) + ",")
-	n = len(values)
+	n = len(magnitudes)
 	i = 0
 	while (i < n):
-		x = values[i]
-		y = values_phaseShift[i]
-		r = np.sqrt(x**2 + y**2)
-		theta = np.arctan2(y, x)
+		r = magnitudes[i]
+		theta = angles[i]
 		file1.write(str(r))
 		file2.write(str(theta))
 		i += 1
