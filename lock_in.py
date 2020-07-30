@@ -6,21 +6,16 @@ import matplotlib.pyplot as plt
 import simulate_signal
 import csv
 
-"""
-Format of lock_in output values.
-Set to 'T' if polar and 'F'' if cartesian.
-"""
-polar = 'T'
 
 """
 Cutoff frequency for low pass filter (Hz)
 """
-cutoff = 1
+cutoff = 0
 
 """
 Frequencies to lock into
 """
-frequencies = [100]
+frequencies = [75, 125]
 """
 Sampling rate of the reference signal DaQ
 """
@@ -29,7 +24,7 @@ refFreq = simulate_signal.refFreq()
 """
 The relative path to the directory where the data is being stored.
 """
-data_dir = '../Lock-in_sim_results/freq_drift_test/1_cutoff/'
+data_dir = '../Lock-in_sim_results/Two-Freq/new/'
 
 """
 1D Array of floats representing each channel.
@@ -174,7 +169,7 @@ def fft_lowpass(data, cutoff, f_s, time):
 		if index < index_lower and index > index_upper:
 			fourier[index] = 0
 	filtered_signal = ifft(fourier)
-	return fourier
+	return filtered_signal
 
 
 def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
@@ -203,70 +198,21 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
 	num_channels = len(mixed[0])
 
 	i = 1
-
-	filtered = []
+	r = []
+	theta = []
 	while (i < num_channels):
 		data = mixed[:,i]
+		data_phaseShift = mixed_phaseShift[:,i]
 		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
-		value = np.mean(filteredColumn)
-		filtered.append(np.real(value))
+		filteredColumn_phaseShift = fft_lowpass(data_phaseShift, cutoff, sample_rate, time)
+		values = np.sqrt(np.power(np.absolute(filteredColumn), 2) + np.power(np.absolute(filteredColumn_phaseShift), 2))
+		angles = np.arctan(np.absolute(filteredColumn_phaseShift)/np.absolute(filteredColumn))
+		angle = np.mean(angles)
+		value = np.mean(values)
+		r.append(value)
+		theta.append(angle)
 		i += 1
-
-
-	i = 1
-	filtered_phaseShift = []
-	while (i < num_channels):
-		data = mixed_phaseShift[:,i]
-		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
-		value = np.mean(filteredColumn)
-		filtered_phaseShift.append(np.real(value))
-		i += 1
-
-	return filtered, filtered_phaseShift
-
-def cartesianOutput(values, values_phaseShift, channels, times):
-	"""
-	Writes lock in output to csv "lock_in_values_x.csv" and "lock_in_values_y.csv".
-	Writes the first row as the channels being measured if the csv is empty.
-	Adds a row of lock in values to the .csv files as: 
-	chunk timeStamp, x0, x1... \n, and the same for y.
-	Parameters
-	----------
-	values : 1D array
-		An array of lock in values for each channel.
-	values_phaseShift : 1D array
-		An array of the phase shifted lock in values for each channel. 
-	channels : 1D array
-		A list of the channels being measured.
-	times : 1D array
-		The timestamps for each signal measurement.
-	"""
-	chunk_time = times[-1]
-	file1 = open(data_dir + "lock_in_values_x.csv", "a+")
-	file2 = open(data_dir + "lock_in_values_y.csv", "a+")
-    
-	if (os.stat(data_dir + "lock_in_values_x.csv").st_size == 0):
-		for channel in channels:
-			file1.write("," + str(channel))
-			file2.write("," + str(channel))
-		file1.write("\n")
-		file2.write("\n")
-	file1.write(str(chunk_time) + ",")
-	file2.write(str(chunk_time) + ",")
-	n = len(values)
-	i = 0
-	while (i < n):
-		file1.write(str(values[i]))
-		file2.write(str(values_phaseShift[i]))
-		i += 1
-		if (i < n):
-			file1.write(",")
-			file2.write(",")
-
-	file1.write("\n")
-	file2.write("\n")
-	file1.close()
-	file2.close()
+	return r, theta
 
 
 def polarOutput(values, values_phaseShift, channels, times, freq):
@@ -326,10 +272,9 @@ def main():
 	#Fits the reference signal to a sine wave.
 
 	ref_vals = rf.setUp(times, frequencies, refFreq)
-	#filtered = np.zeros(len(channels))
-	#filtered_phaseShift = np.zeros(len(channels))
-	filtered = []
-	filtered_phaseShift = []
+
+	magnitudes = []
+	angles = []
 	for fit_params in ref_vals:
 		est_freq, est_phase, est_offset, est_amp = fit_params[0], fit_params[1], fit_params[2], fit_params[3]
 
@@ -339,17 +284,14 @@ def main():
 		#Timestamps in seconds
 		time = mixed[:,0]
 
-		curr_filtered, curr_filtered_phaseShift = apply_lowpass(mixed, mixed_phaseShift, time, cutoff)
-		filtered.append(curr_filtered)
-		filtered_phaseShift.append(curr_filtered_phaseShift)
+		curr_magnitudes, curr_angles = apply_lowpass(mixed, mixed_phaseShift, time, cutoff)
+		magnitudes.append(curr_magnitudes)
+		angles.append(curr_angles)
 
 	i = 0
 	while i < len(filtered):
-		if (polar == "T"):
-			freq = frequencies[i]
-			polarOutput(filtered[i], filtered_phaseShift[i], channels, time, freq)
-		else:
-			cartesianOutput(filtered[i], filtered_phaseShift[i], channels, time)
+		freq = frequencies[i]
+		polarOutput(magnitudes[i], angles[i], channels, time, freq)
 		i += 1
 
 if __name__ == "__main__":
