@@ -287,7 +287,7 @@ def main():
 		angles.append(curr_angles)
 
 	i = 0
-	while i < len(filtered):
+	while i < len(magnitudes):
 		freq = frequencies[i]
 		polarOutput(magnitudes[i], angles[i], channels, time, freq)
 		i += 1
