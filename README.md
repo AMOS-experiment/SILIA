@@ -2,6 +2,9 @@
 
 A software implementation of a multi channel and multi frequency lock-in amplifier to extract periodic features from data
 
+An overview of the lock-in process:
+
+![Alt text](images/general_code_diagram.png?raw=true "General Code Summary")
 
 To install, navigate to the package directory in terminal and run 
 ~~~ 
