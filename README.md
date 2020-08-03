@@ -2,17 +2,15 @@
 
 A software implementation of a multi channel and multi frequency lock-in amplifier to extract periodic features from data
 
-An overview of the lock-in process:
-
-![Alt text](images/general_code_diagram.png?raw=true "General Code Summary")
-
 To install, navigate to the package directory in terminal and run 
 ~~~ 
 python setup.py install
 ~~~
 
 For a tutorial on how to use the software, look at the jupyter notebook in the 'Example/' directory. In the notebook, we simulate a dataset but the data inputs can be readings from any device or even old video given that they are formatted the correct way. 
+ 
+An overview of the lock-in process - see (link to paper) for more info:
 
-See (link to paper) for more info. 
+![Alt text](images/general_code_diagram.png?raw=true "General Code Summary")
 
 Please ask Amrut Nadgir (amrut.nadgir@gmail.com) or Richard Thurston (rthurston@lbl.gov) if you have any questions. 
