@@ -10,4 +10,6 @@ python setup.py install
 
 For a tutorial on how to use the software, look at the jupyter notebook in the 'Example/' directory. In the notebook, we simulate a dataset but the data inputs can be readings from any device or even old video given that they are formatted the correct way. 
 
+See (link to paper) for more info. 
+
 Please ask Amrut Nadgir (amrut.nadgir@gmail.com) or Richard Thurston (rthurston@lbl.gov) if you have any questions. 
