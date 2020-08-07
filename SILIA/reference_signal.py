@@ -75,5 +75,8 @@ def setUp(references):
 
         optimize_func = lambda x: x[3]*np.sin(x[0]*time*2*np.pi + x[1]) + x[2] - rawInput
         est_freq, est_phase, est_offset, est_amp = leastsq(optimize_func, [guess_freq, guess_phase, guess_offset, guess_amp])[0]
+        est_phase = est_phase % (2 * np.pi)
+        if est_phase > np.pi:
+        	est_phase -= 2 * np.pi
         ref_values += [[est_freq, est_phase, est_offset, est_amp]]
     return ref_values

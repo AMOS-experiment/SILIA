@@ -34,10 +34,11 @@ class Amplifier:
 
 		magnitudes = []
 		angles = []
-		reference_frequencies = []
+		references = {'frequencies' : [], 'phase' : []}
 		for fit_params in ref_vals:
 			est_freq, est_phase, est_offset, est_amp = fit_params[0], fit_params[1], fit_params[2], fit_params[3]
-			reference_frequencies.append(est_freq)
+			references['frequencies'].append(est_freq)
+			references['phase'].append(est_phase)
 			#Timestamps
 			time = signal_input['time']
 			#Mixes the intensity signal with the normal and phase shifted reference signals.
@@ -49,7 +50,7 @@ class Amplifier:
 			angles.append(curr_angles)
 
 		i = 0
-		out = {'channels' : channels, 'reference frequencies' : reference_frequencies}
+		out = {'channels' : channels, 'references' : references}
 		while i < len(magnitudes):
 			label = 'reference ' + str(i + 1)
 			out[label] = {'magnitudes' : magnitudes[i], 'phase' : angles[i]}
