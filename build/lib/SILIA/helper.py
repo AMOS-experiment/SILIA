@@ -1,7 +1,8 @@
 import numpy as np
-from numpy.fft import fft, ifft
+from numpy.fft import rfft, irfft
 from tqdm import tqdm
 from tqdm import trange
+import scipy.interpolate
 
 
 def find_nearest(array, value):
@@ -29,11 +30,16 @@ def refValue_phaseShift (t, est_freq, est_phase):
 	"""
 	return 2 * np.cos(est_freq*t*2*np.pi + est_phase)
 
+
+
 def mix(signal_input, est_freq, est_phase):
 	"""
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
-	by the fitted reference signal as well as its pi/2 phase shift. 
+	by the fitted reference signal as well as its pi/2 phase shift.
+	Also linearly interpolates the input so the mixed signal has
+	consistent timesteps and applies the kaiser window to 
+	mitigate sidelobes. 
 	Parameters
 	----------
 	signal : 2D array of floats
@@ -55,11 +61,14 @@ def mix(signal_input, est_freq, est_phase):
 	#Shifts intensity values so each signal is centered at 0.
 	time = signal_input['time']
 	signal = np.array(signal_input['signal'])
-
+	interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False, kind='cubic', axis = 0)
+	signal = interpolated(time)
 	print("Started Mixing", flush = True)
+	num_rows = len(signal)
+	num_cols = len(signal[0])
 	mixed = []
 	mixed_phaseShift = []
-	for i in trange(len(signal)):
+	for i in trange(num_rows):
 		j = 0
 		timeStamp = time[i] #timestamp
 
@@ -68,21 +77,23 @@ def mix(signal_input, est_freq, est_phase):
 
 		mixed.append([])
 		mixed_phaseShift.append([])
-		while (j < len(signal[i])):
+		while (j < num_cols):
 			mixed[i].append(ref_value * (signal[i, j]))
 			mixed_phaseShift[i].append(ref_value_phaseShift * (signal[i, j]))
 			j += 1
 
 	mixed = np.asarray(mixed)
 	mixed_phaseShift = np.asarray(mixed_phaseShift)
-
+	window = np.hanning(num_rows)
+	mixed = mixed * window.reshape((window.size, 1))
+	mixed_phaseShift = mixed_phaseShift * window.reshape((window.size, 1))
 	return mixed, mixed_phaseShift
 
 def fft_lowpass(data, cutoff, f_s, time):
 	"""
 	Lowpass filter using the numpy fft algorithm.
 	Used to filter the mixed signal for single channels.
-	
+	zero pads the input data
 	Parameters
 	----------
 	data : 1D array of floats
@@ -100,8 +111,8 @@ def fft_lowpass(data, cutoff, f_s, time):
 		Signal after being filtered. 
 	"""
 	n = len(data)
-	fourier = fft(data)
-	frequencies = np.fft.fftfreq(len(time)) * f_s
+	fourier = rfft(data)
+	frequencies = np.fft.rfftfreq(len(time)) * f_s
 	index_upper = 0
 	index_lower = len(fourier) - 1  
 	for index, freq in enumerate(frequencies):
@@ -116,7 +127,8 @@ def fft_lowpass(data, cutoff, f_s, time):
 	for index, freq in enumerate(frequencies):
 		if index < index_lower and index > index_upper:
 			fourier[index] = 0
-	filtered_signal = ifft(fourier)
+	fourier *= 2
+	filtered_signal = irfft(fourier)
 	return filtered_signal
 
 
