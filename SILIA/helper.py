@@ -62,7 +62,12 @@ def mix(signal_input, est_freq, est_phase):
 	time = signal_input['time']
 	signal = np.array(signal_input['signal'])
 	interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False, kind='cubic', axis = 0)
-	signal = interpolated(time)
+	min_time = min(time)
+	max_time = max(time)
+	len_time = len(time)
+	timestep = (max(time) - min(time))/len(time)
+	even_time = np.arange(min_time, max_time, timestep)
+	signal = interpolated(even_time)
 	print("Started Mixing", flush = True)
 	num_rows = len(signal)
 	num_cols = len(signal[0])
@@ -70,7 +75,7 @@ def mix(signal_input, est_freq, est_phase):
 	mixed_phaseShift = []
 	for i in trange(num_rows):
 		j = 0
-		timeStamp = time[i] #timestamp
+		timeStamp = even_time[i] #timestamp
 
 		ref_value = refValue(timeStamp, est_freq, est_phase)
 		ref_value_phaseShift = refValue_phaseShift(timeStamp, est_freq, est_phase)
