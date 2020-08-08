@@ -37,8 +37,8 @@ def mix(signal_input, est_freq, est_phase):
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
 	by the fitted reference signal as well as its pi/2 phase shift.
-	Also linearly interpolates the input so the mixed signal has
-	consistent timesteps and applies the kaiser window to 
+	Also performs cubic interpolation on the input so the mixed signal has
+	consistent timesteps and applies the Hanning window to 
 	mitigate sidelobes. 
 	Parameters
 	----------
