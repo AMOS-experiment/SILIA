@@ -119,18 +119,13 @@ def fft_lowpass(data, cutoff, f_s, time):
 	fourier = rfft(data)
 	frequencies = np.fft.rfftfreq(len(time)) * f_s
 	index_upper = 0
-	index_lower = len(fourier) - 1  
 	for index, freq in enumerate(frequencies):
 		if freq > cutoff:
 			index_upper = index
 			break
 
 	for index, freq in enumerate(frequencies):
-		if (freq < 0 and freq > -1 * cutoff):
-			index_lower = index - 1 #Subtracting 1 from index to ensure upper and lower frequencies are the same
-			break
-	for index, freq in enumerate(frequencies):
-		if index < index_lower and index > index_upper:
+		if index >= index_upper:
 			fourier[index] = 0
 	fourier *= 2
 	filtered_signal = irfft(fourier)
