@@ -37,8 +37,8 @@ def mix(signal_input, est_freq, est_phase):
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
 	by the fitted reference signal as well as its pi/2 phase shift.
-	Also linearly interpolates the input so the mixed signal has
-	consistent timesteps and applies the kaiser window to 
+	Also performs cubic interpolation on the input so the mixed signal has
+	consistent timesteps and applies the Hanning window to 
 	mitigate sidelobes. 
 	Parameters
 	----------
@@ -59,31 +59,23 @@ def mix(signal_input, est_freq, est_phase):
 		Same formatting as mixed. 
 	"""
 	#Shifts intensity values so each signal is centered at 0.
+	print("Mixing...", flush = True)
 	time = signal_input['time']
 	signal = np.array(signal_input['signal'])
 	interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False, kind='cubic', axis = 0)
-	signal = interpolated(time)
-	print("Started Mixing", flush = True)
+	min_time = min(time)
+	max_time = max(time)
+	len_time = len(time)
+	timestep = (max(time) - min(time))/len(time)
+	even_time = np.arange(min_time, max_time, timestep)
+	signal = interpolated(even_time)
 	num_rows = len(signal)
 	num_cols = len(signal[0])
-	mixed = []
-	mixed_phaseShift = []
-	for i in trange(num_rows):
-		j = 0
-		timeStamp = time[i] #timestamp
+	ref_vals = refValue(even_time, est_freq, est_phase)
+	ref_vals_phaseShift = refValue_phaseShift(even_time, est_freq, est_phase)
+	mixed = np.multiply(signal, np.array([ref_vals]).T)
+	mixed_phaseShift = np.multiply(signal, np.array([ref_vals_phaseShift]).T)
 
-		ref_value = refValue(timeStamp, est_freq, est_phase)
-		ref_value_phaseShift = refValue_phaseShift(timeStamp, est_freq, est_phase)
-
-		mixed.append([])
-		mixed_phaseShift.append([])
-		while (j < num_cols):
-			mixed[i].append(ref_value * (signal[i, j]))
-			mixed_phaseShift[i].append(ref_value_phaseShift * (signal[i, j]))
-			j += 1
-
-	mixed = np.asarray(mixed)
-	mixed_phaseShift = np.asarray(mixed_phaseShift)
 	window = np.hanning(num_rows)
 	mixed = mixed * window.reshape((window.size, 1))
 	mixed_phaseShift = mixed_phaseShift * window.reshape((window.size, 1))
@@ -114,18 +106,13 @@ def fft_lowpass(data, cutoff, f_s, time):
 	fourier = rfft(data)
 	frequencies = np.fft.rfftfreq(len(time)) * f_s
 	index_upper = 0
-	index_lower = len(fourier) - 1  
 	for index, freq in enumerate(frequencies):
 		if freq > cutoff:
 			index_upper = index
 			break
 
 	for index, freq in enumerate(frequencies):
-		if (freq < 0 and freq > -1 * cutoff):
-			index_lower = index - 1 #Subtracting 1 from index to ensure upper and lower frequencies are the same
-			break
-	for index, freq in enumerate(frequencies):
-		if index < index_lower and index > index_upper:
+		if index >= index_upper:
 			fourier[index] = 0
 	fourier *= 2
 	filtered_signal = irfft(fourier)

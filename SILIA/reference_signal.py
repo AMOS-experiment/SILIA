@@ -3,7 +3,6 @@ from scipy.optimize import leastsq
 import os
 from scipy import square
 
-
 def setUp(references):
 
     """
@@ -17,6 +16,7 @@ def setUp(references):
         which consists of an array of timestamps labeled by 'time' and an array 
         of signal values labeled by 'signal'.
     """
+
     ref_values = []
 
     for ref in references:

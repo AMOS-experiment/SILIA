@@ -59,6 +59,7 @@ def mix(signal_input, est_freq, est_phase):
 		Same formatting as mixed. 
 	"""
 	#Shifts intensity values so each signal is centered at 0.
+	print("Mixing...", flush = True)
 	time = signal_input['time']
 	signal = np.array(signal_input['signal'])
 	interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False, kind='cubic', axis = 0)
@@ -68,27 +69,13 @@ def mix(signal_input, est_freq, est_phase):
 	timestep = (max(time) - min(time))/len(time)
 	even_time = np.arange(min_time, max_time, timestep)
 	signal = interpolated(even_time)
-	print("Started Mixing", flush = True)
 	num_rows = len(signal)
 	num_cols = len(signal[0])
-	mixed = []
-	mixed_phaseShift = []
-	for i in trange(num_rows):
-		j = 0
-		timeStamp = even_time[i] #timestamp
+	ref_vals = refValue(even_time, est_freq, est_phase)
+	ref_vals_phaseShift = refValue_phaseShift(even_time, est_freq, est_phase)
+	mixed = np.multiply(signal, np.array([ref_vals]).T)
+	mixed_phaseShift = np.multiply(signal, np.array([ref_vals_phaseShift]).T)
 
-		ref_value = refValue(timeStamp, est_freq, est_phase)
-		ref_value_phaseShift = refValue_phaseShift(timeStamp, est_freq, est_phase)
-
-		mixed.append([])
-		mixed_phaseShift.append([])
-		while (j < num_cols):
-			mixed[i].append(ref_value * (signal[i, j]))
-			mixed_phaseShift[i].append(ref_value_phaseShift * (signal[i, j]))
-			j += 1
-
-	mixed = np.asarray(mixed)
-	mixed_phaseShift = np.asarray(mixed_phaseShift)
 	window = np.hanning(num_rows)
 	mixed = mixed * window.reshape((window.size, 1))
 	mixed_phaseShift = mixed_phaseShift * window.reshape((window.size, 1))

@@ -14,8 +14,8 @@ setuptools.setup(
     license='LICENSE.txt',
     long_description=long_description,
     install_requires=[
-       "numpy",
-       "scipy",
+       "numpy==1.15.4",
+       "scipy==1.2.1",
    ],
    python_requires='>=3'
 )
