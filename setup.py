@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
        "numpy==1.15.4",
        "scipy==1.2.1",
+       "tqdm",
    ],
    python_requires='>=3'
 )
