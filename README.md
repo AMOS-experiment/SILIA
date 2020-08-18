@@ -2,7 +2,7 @@
 
 A software implementation of a multi channel and multi frequency lock-in amplifier to extract periodic features from data
 
-To install, navigate to the package directory in terminal and run 
+To install, open terminal as admin, navigate to the package directory and run 
 ~~~ 
 python setup.py install
 ~~~
