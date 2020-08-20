@@ -148,7 +148,7 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
 
 	r = []
 	theta = []
-	for i in trange(num_channels):
+	for i in trange(num_channels, position= 0, leave = True):
 		data = mixed[:,i]
 		data_phaseShift = mixed_phaseShift[:,i]
 		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
