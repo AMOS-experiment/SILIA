@@ -32,7 +32,7 @@ def refValue_phaseShift (t, est_freq, est_phase):
 
 
 
-def mix(signal_input, est_freq, est_phase):
+def mix(signal, time, est_freq, est_phase):
 	"""
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
@@ -60,8 +60,6 @@ def mix(signal_input, est_freq, est_phase):
 	"""
 	#Shifts intensity values so each signal is centered at 0.
 	print("Mixing...", flush = True)
-	time = signal_input['time']
-	signal = np.array(signal_input['signal'])
 	interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False, kind='cubic', axis = 0)
 	min_time = min(time)
 	max_time = max(time)

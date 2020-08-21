@@ -22,7 +22,7 @@ class Amplifier:
 		self.cutoff = new_cutoff
 		return new_cutoff
 
-	def amplify(self, channels, references, signal_input):
+	def amplify(self, references, signal_input):
 
 		"""
 		Performs simultaneous lock-in.
@@ -40,9 +40,19 @@ class Amplifier:
 			references['frequencies'].append(est_freq)
 			references['phase'].append(est_phase)
 			#Timestamps
-			time = signal_input['time']
+			time = np.asarray(signal_input['time'])
+			signal = np.asarray(signal_input['signal'])
+			size = signal.shape
+			dim = len(signal.shape)
+
+			#Reshaping the n-dimensional input into a 1D array for each timestamp
+			arr_len = 1
+			for i in range(dim - 1):
+				arr_len *= size[i]
+			signal = np.reshape(signal, (arr_len, len(time))).T
+
 			#Mixes the intensity signal with the normal and phase shifted reference signals.
-			mixed, mixed_phaseShift = mix(signal_input, est_freq, est_phase)
+			mixed, mixed_phaseShift = mix(signal, time, est_freq, est_phase)
 
 			#Applies lowpass filter
 			curr_magnitudes, curr_angles = apply_lowpass(mixed, mixed_phaseShift, time, self.cutoff)
@@ -50,9 +60,12 @@ class Amplifier:
 			angles.append(curr_angles)
 
 		i = 0
-		out = {'channels' : channels, 'references' : references}
+		out = {'references' : references}
 		while i < len(magnitudes):
 			label = 'reference ' + str(i + 1)
-			out[label] = {'magnitudes' : magnitudes[i], 'phase' : angles[i]}
+			#reshaping output into their original form without the time dependence
+			mags = np.reshape(magnitudes[i], size[: dim - 1])
+			phases = np.reshape(angles[i], size[: dim - 1])
+			out[label] = {'magnitudes' : magnitudes[i], 'phases' : phases}
 			i += 1
 		return out
