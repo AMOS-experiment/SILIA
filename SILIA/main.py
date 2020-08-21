@@ -47,9 +47,9 @@ class Amplifier:
 
 			#Reshaping the n-dimensional input into a 1D array for each timestamp
 			arr_len = 1
-			for i in range(dim - 1):
+			for i in range(1, dim):
 				arr_len *= size[i]
-			signal = np.reshape(signal, (arr_len, len(time))).T
+			signal = np.reshape(signal, (len(time), arr_len))
 
 			#Mixes the intensity signal with the normal and phase shifted reference signals.
 			mixed, mixed_phaseShift = mix(signal, time, est_freq, est_phase)
@@ -64,8 +64,8 @@ class Amplifier:
 		while i < len(magnitudes):
 			label = 'reference ' + str(i + 1)
 			#reshaping output into their original form without the time dependence
-			mags = np.reshape(magnitudes[i], size[: dim - 1])
-			phases = np.reshape(angles[i], size[: dim - 1])
+			mags = np.reshape(magnitudes[i], size[1: dim])
+			phases = np.reshape(angles[i], size[1: dim])
 			out[label] = {'magnitudes' : magnitudes[i], 'phases' : phases}
 			i += 1
 		return out
