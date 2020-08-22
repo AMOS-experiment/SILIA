@@ -66,6 +66,6 @@ class Amplifier:
 			#reshaping output into their original form without the time dependence
 			mags = np.reshape(magnitudes[i], size[1: dim])
 			phases = np.reshape(angles[i], size[1: dim])
-			out[label] = {'magnitudes' : magnitudes[i], 'phases' : phases}
+			out[label] = {'magnitudes' : mags, 'phases' : phases}
 			i += 1
 		return out
