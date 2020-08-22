@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SILIA", # Replace with your own username
-    version="0.1",
+    version="1.0",
     author="Amrut Nadgir",
     author_email="amrut.nadgir@gmail.com",
     description="A software implementation of a multi-channel and multi-frequency lock-in amplifier to extract periodic features from data.",
