@@ -1,6 +1,6 @@
 Metadata-Version: 1.2
 Name: SILIA
-Version: 0.1
+Version: 1.0
 Summary: A software implementation of a multi-channel and multi-frequency lock-in amplifier to extract periodic features from data.
 Home-page: https://github.com/amrutn/SILIA
 Author: Amrut Nadgir

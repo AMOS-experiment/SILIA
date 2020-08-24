@@ -168,14 +168,15 @@ def split(sample_len, num_windows, window_size):
 	each other window by a proportion given by 
 	'overlap'. The sample_len is the length of the sample. 
 	"""
-	window_size = round(sample_len * window_size)
+	window_size = int(sample_len * window_size)
 	if num_windows == 1:
 		return [(0, window_size)]
-	step_size = round((sample_len - window_size)/(num_windows - 1)) 
-	leftover = sample_len % step_size
+	step_size = int((sample_len - window_size)/(num_windows - 1)) 
+	leftover = leftover = sample_len - step_size * (num_windows-1) - window_size
 	
-	sizes = window_size * np.ones(num_windows)
-	step_sizes = step_size * np.ones(num_windows)
+	sizes = (window_size  + int(leftover/num_windows))* np.ones(num_windows)
+	step_sizes = (step_size + int(leftover/num_windows)) * np.ones(num_windows)
+	leftover = leftover % num_windows
 	for i in range(leftover):
 		sizes[i] += 1
 		step_sizes[i + 1] += 1

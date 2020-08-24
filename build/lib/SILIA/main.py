@@ -56,9 +56,14 @@ class Amplifier:
 				arr_len *= size[i]
 			signal = np.reshape(signal, (size[0], arr_len))
 
-			#Applies lock-in with errorbars
+			#Applies lock-in for errorbars
 			curr_magnitudes, curr_angles, curr_mag_err, curr_phase_err, indices = lock_in(signal,
 			 time, est_freq, est_phase, self.cutoff, num_windows, window_size)
+
+			#Applies lock-in for results - only necessary if there is more than one window.
+			if num_windows != 1:
+				curr_magnitudes, curr_angles, _, _, _ = lock_in(signal,
+				 time, est_freq, est_phase, self.cutoff, num_windows = 1, window_size = 1)
 
 			magnitudes.append(curr_magnitudes)
 			angles.append(curr_angles)
