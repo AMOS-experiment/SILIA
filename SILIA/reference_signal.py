@@ -3,7 +3,7 @@ from scipy.optimize import leastsq
 import os
 from scipy import square
 
-def setUp(references):
+def fit(references):
 
     """
     Fits the measured reference signal to a sine wave and returns
