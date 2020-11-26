@@ -9,7 +9,7 @@ python setup.py install
 
 For a tutorial on how to use the software, look at the jupyter notebook in the 'Example/' directory. In the notebook, we simulate a dataset but the data inputs can be readings from any device or even old video given that they are formatted the correct way. 
  
-An overview of the lock-in process - see (link to paper) for more info:
+Below, an overview of the lock-in process. The reference fitting step can also be skipped with a toggle. For more information, see 'Manuscript Draft.pdf' which is an early and rudimentary version of the paper we hope to eventually submit.
 
 ![Alt text](images/general_code_diagram.png?raw=true "General Code Summary")
 
