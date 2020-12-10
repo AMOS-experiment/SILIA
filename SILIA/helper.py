@@ -149,7 +149,7 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
 		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
 		filteredColumn_phaseShift = fft_lowpass(data_phaseShift, cutoff, sample_rate, time)
 		values = np.sqrt(np.power(np.absolute(filteredColumn), 2) + np.power(np.absolute(filteredColumn_phaseShift), 2))
-		angles = np.arctan2(filteredColumn_phaseShift/filteredColumn)
+		angles = np.arctan2(filteredColumn_phaseShift, filteredColumn)
 		angle = np.mean(angles)
 		value = np.mean(values)
 		r.append(value)
