@@ -22,7 +22,8 @@ class Amplifier:
 		self.cutoff = new_cutoff
 		return new_cutoff
 
-	def amplify(self, references, signal_input, fit_ref = True, num_windows = 1, window_size = 1):
+	def amplify(self, references, signal_input, fit_ref = True,
+	 num_windows = 1, window_size = 1, interpolate = False):
 
 		"""
 		Performs simultaneous lock-in. See the docstrings in helper.py and 
@@ -43,7 +44,8 @@ class Amplifier:
 			ang_errors = []
 			fit_vals = {'frequencies' : [], 'phases' : []}
 			for fit_params in ref_vals:
-				est_freq, est_phase, est_offset, est_amp = fit_params[0], fit_params[1], fit_params[2], fit_params[3]
+				est_freq, est_phase, est_offset, est_amp = fit_params[0],\
+				 fit_params[1], fit_params[2], fit_params[3]
 				fit_vals['frequencies'].append(est_freq)
 				fit_vals['phases'].append(est_phase)
 				#Timestamps
@@ -60,12 +62,13 @@ class Amplifier:
 
 				#Applies lock-in with errorbars
 				curr_magnitudes, curr_angles, curr_mag_err, curr_phase_err, indices = lock_in(signal,
-				 time, est_freq, est_phase, self.cutoff, num_windows, window_size)
+				 time, est_freq, est_phase, self.cutoff, num_windows, window_size, interpolate)
 
 				#Applies lock-in for results - only necessary if there is more than one window.
 				if num_windows != 1:
 					curr_magnitudes, curr_angles, _, _, _ = lock_in(signal,
-					 time, est_freq, est_phase, self.cutoff, num_windows = 1, window_size = 1)
+					 time, est_freq, est_phase, self.cutoff, num_windows = 1, window_size = 1,
+					  interpolate = interpolate)
 
 				magnitudes.append(curr_magnitudes)
 				angles.append(curr_angles)
@@ -110,12 +113,13 @@ class Amplifier:
 
 				#Applies lock-in with errorbars
 				curr_magnitudes, curr_mag_err, indices = lock_in_no_fit(signal, sig_time, ref_sig, 
-					ref_time, self.cutoff, num_windows, window_size)
+					ref_time, self.cutoff, num_windows, window_size, interpolate)
 
 				#Applies lock-in for results - only necessary if there is more than one window.
 				if num_windows != 1:
 					curr_magnitudes, _, _ = lock_in_no_fit(signal, sig_time, ref_sig,
-						ref_time, self.cutoff, num_windows = 1, window_size = 1)
+						ref_time, self.cutoff, num_windows = 1, window_size = 1,
+						 interpolate = interpolate)
 
 				magnitudes.append(curr_magnitudes)
 				mag_errors.append(curr_mag_err)

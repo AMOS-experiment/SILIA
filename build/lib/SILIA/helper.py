@@ -33,7 +33,7 @@ def refValue_phaseShift (t, est_freq, est_phase):
 
 
 
-def mix(signal, time, est_freq, est_phase):
+def mix(signal, time, est_freq, est_phase, interpolate):
 	"""
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
@@ -61,28 +61,36 @@ def mix(signal, time, est_freq, est_phase):
 		Same formatting as mixed. 
 	"""
 	print("Mixing...", flush = True)
-	interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False, kind='cubic', axis = 0, fill_value = "extrapolate")
-	min_time = min(time)
-	max_time = max(time)
-	len_time = len(time)
-	timestep = (max(time) - min(time))/len(time)
-	even_time = np.arange(min_time, max_time, timestep)
-	signal = interpolated(even_time)
+	if interpolate:
+		min_time = min(time)
+		max_time = max(time)
+		len_time = len(time)
+		timestep = (max(time) - min(time))/len(time)
+		even_time = np.arange(min_time, max_time, timestep)
+		interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False,
+		 kind='cubic', axis = 0, fill_value = "extrapolate")
+		signal = interpolated(even_time)
+		ref_vals = refValue(even_time, est_freq, est_phase)
+		ref_vals_phaseShift = refValue_phaseShift(even_time, est_freq, est_phase)
+	
 	num_rows = len(signal)
 	num_cols = len(signal[0])
-	ref_vals = refValue(even_time, est_freq, est_phase)
-	ref_vals_phaseShift = refValue_phaseShift(even_time, est_freq, est_phase)
+	ref_vals = refValue(time, est_freq, est_phase)
+	ref_vals_phaseShift = refValue_phaseShift(time, est_freq, est_phase)
 	mixed = np.multiply(signal, np.array([ref_vals]).T) * 2 #The 2 is a scaling factor
 	mixed_phaseShift = np.multiply(signal, np.array([ref_vals_phaseShift]).T) * 2 #The 2 is a scaling factor
 
 	window = np.hanning(num_rows)
 	mixed = mixed * window.reshape((window.size, 1))
 	mixed_phaseShift = mixed_phaseShift * window.reshape((window.size, 1))
-	return mixed, mixed_phaseShift, even_time
+	if interpolate:
+		return mixed, mixed_phaseShift, even_time
+	else:
+		return mixed, mixed_phaseShift, time
 
 
 
-def fft_lowpass(data, cutoff, f_s, time):
+def fft_lowpass(data, cutoff, f_s, timesteps):
 	"""
 	Lowpass filter using the numpy fft algorithm.
 	Used to filter the mixed signal for single channels.
@@ -95,8 +103,8 @@ def fft_lowpass(data, cutoff, f_s, time):
 		Cutoff frequency for lowpass filter.
 	f_s : float
 	    Sampling frequency of the intensity values. 
-	time : 1D array of floats
-		The timestamps for the signal data.
+	timesteps : float
+		Number of timesteps for signal data
 	
 	Returns
 	-------
@@ -105,8 +113,9 @@ def fft_lowpass(data, cutoff, f_s, time):
 	"""
 	n = len(data)
 	fourier = rfft(data)
-	frequencies = rfftfreq(len(time)) * f_s
-	index_upper = int(cutoff * len(time)/f_s)
+
+	frequencies = rfftfreq(timesteps) * f_s
+	index_upper = int(cutoff * timesteps/f_s)
 	mask = np.zeros(fourier.size)
 	mask[range(index_upper + 1)] = 2
 	fourier *= mask
@@ -146,8 +155,8 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
 	for i in trange(num_channels, position= 0, leave = True):
 		data = mixed[:,i]
 		data_phaseShift = mixed_phaseShift[:,i]
-		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
-		filteredColumn_phaseShift = fft_lowpass(data_phaseShift, cutoff, sample_rate, time)
+		filteredColumn = fft_lowpass(data, cutoff, sample_rate, timeSteps)
+		filteredColumn_phaseShift = fft_lowpass(data_phaseShift, cutoff, sample_rate, timeSteps)
 		values = np.sqrt(np.power(np.absolute(filteredColumn), 2) + np.power(np.absolute(filteredColumn_phaseShift), 2))
 		angles = np.arctan2(filteredColumn_phaseShift, filteredColumn)
 		angle = np.mean(angles)
@@ -189,7 +198,7 @@ def split(sample_len, num_windows, window_size):
 
 	return indices
 
-def lock_in(signal, time, est_freq, est_phase, cutoff, num_windows, window_size):
+def lock_in(signal, time, est_freq, est_phase, cutoff, num_windows, window_size, interpolate):
 
 	"""
 	Applies lock-in to the data by performing the signal mixing and 
@@ -234,7 +243,7 @@ def lock_in(signal, time, est_freq, est_phase, cutoff, num_windows, window_size)
 		signal = signal[indices[0][0]:indices[0][1]]
 		time = time[indices[0][0]:indices[0][1]]
 		#mixing the signal
-		mixed, mixed_phaseShift, even_time = mix(signal, time, est_freq, est_phase)
+		mixed, mixed_phaseShift, even_time = mix(signal, time, est_freq, est_phase, interpolate)
 		#Applying the lowpass filter
 		magnitudes, phases = apply_lowpass(mixed, mixed_phaseShift, even_time, cutoff)
 		return magnitudes, phases, 0, 0, indices
@@ -247,7 +256,7 @@ def lock_in(signal, time, est_freq, est_phase, cutoff, num_windows, window_size)
 		tmpSig = signal[index[0] : index[1]]
 		tmpTime = time[index[0] : index[1]]
 		#Mixes the intensity signal with the normal and phase shifted reference signals.
-		mixed, mixed_phaseShift, even_time = mix(tmpSig, tmpTime, est_freq, est_phase)
+		mixed, mixed_phaseShift, even_time = mix(tmpSig, tmpTime, est_freq, est_phase, interpolate)
 		#Applies lowpass filter
 		tmpMags, tmpPhases  = apply_lowpass(mixed, mixed_phaseShift, even_time, cutoff)
 		mags_list.append(np.asarray(tmpMags))
@@ -264,7 +273,7 @@ def lock_in(signal, time, est_freq, est_phase, cutoff, num_windows, window_size)
 
 # No fit functions
 
-def mix_no_fit(signal, sig_time, reference, ref_time):
+def mix_no_fit(signal, sig_time, reference, ref_time, interpolate):
 	"""
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
@@ -277,7 +286,7 @@ def mix_no_fit(signal, sig_time, reference, ref_time):
 	----------
 	signal : 2D array of floats
 		Intensity values for each channel over time.
-	sig_ime : 1D array of floats
+	sig_time : 1D array of floats
 		Timestamps for the data
 	reference : 1D array of floats
 		Reference signal over time. 
@@ -290,23 +299,28 @@ def mix_no_fit(signal, sig_time, reference, ref_time):
 		Each row is a set of mixed values for each channel with a timestamp.
 	"""
 	print("Mixing...", flush = True)
-	interpolated_sig = scipy.interpolate.interp1d(sig_time, signal, bounds_error=False, kind='cubic', axis = 0, fill_value = "extrapolate")
-	interpolated_ref = scipy.interpolate.interp1d(ref_time, reference, bounds_error=False, kind='cubic', axis = 0, fill_value = "extrapolate")
-	min_time = min(sig_time)
-	max_time = max(sig_time)
-	len_time = len(sig_time)
-	timestep = (max(sig_time) - min(sig_time))/len(sig_time)
-	even_time = np.arange(min_time, max_time, timestep)
-	signal = interpolated_sig(even_time)
-	ref_vals = interpolated_ref(even_time)
+	if interpolate:
+		interpolated_sig = scipy.interpolate.interp1d(sig_time, signal, bounds_error=False,
+		 kind='cubic', axis = 0, fill_value = "extrapolate")
+		interpolated_ref = scipy.interpolate.interp1d(ref_time, reference, bounds_error=False,
+		 kind='cubic', axis = 0, fill_value = "extrapolate")
+		min_time = min(sig_time)
+		max_time = max(sig_time)
+		len_time = len(sig_time)
+		timestep = (max(sig_time) - min(sig_time))/len(sig_time)
+		even_time = np.arange(min_time, max_time, timestep)
+		signal = interpolated_sig(even_time)
+		reference = interpolated_ref(even_time)
 	num_rows = len(signal)
 	num_cols = len(signal[0])
-	mixed = np.multiply(signal, np.array([ref_vals]).T) * 2 #The 2 is a scaling factor.
+	mixed = np.multiply(signal, np.array([reference]).T) * 2 #The 2 is a scaling factor.
 
 	window = np.hanning(num_rows)
 	mixed = mixed * window.reshape((window.size, 1))
-
-	return mixed, even_time
+	if interpolate:
+		return mixed, even_time
+	else:
+		return mixed, sig_time
 
 def apply_lowpass_no_fit(mixed, time, cutoff):
 	"""
@@ -336,13 +350,13 @@ def apply_lowpass_no_fit(mixed, time, cutoff):
 	theta = []
 	for i in trange(num_channels, position= 0, leave = True):
 		data = mixed[:,i]
-		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
+		filteredColumn = fft_lowpass(data, cutoff, sample_rate, timeSteps)
 		values = np.absolute(filteredColumn)
 		value = np.mean(values)
 		r.append(value)
 	return r
 
-def lock_in_no_fit(signal, sig_time, reference, ref_time, cutoff, num_windows, window_size):
+def lock_in_no_fit(signal, sig_time, reference, ref_time, cutoff, num_windows, window_size, interpolate):
 
 	"""
 	Applies lock-in to the data by performing the signal mixing and 
@@ -382,8 +396,10 @@ def lock_in_no_fit(signal, sig_time, reference, ref_time, cutoff, num_windows, w
 		indices = split(len(signal), num_windows, window_size)
 		signal = signal[indices[0][0]:indices[0][1]]
 		sig_time = sig_time[indices[0][0]:indices[0][1]]
+		reference = reference[indices[0][0]:indices[0][1]]
+		ref_time = ref_time[indices[0][0]:indices[0][1]]
 		#mixing the signal
-		mixed, even_time = mix_no_fit(signal, sig_time, reference, ref_time)
+		mixed, even_time = mix_no_fit(signal, sig_time, reference, ref_time, interpolate)
 		#Applying the lowpass filter
 		magnitudes = apply_lowpass_no_fit(mixed, even_time, cutoff)
 		return magnitudes, 0, indices
@@ -395,8 +411,10 @@ def lock_in_no_fit(signal, sig_time, reference, ref_time, cutoff, num_windows, w
 	for index in indices:
 		tmpSig = signal[index[0] : index[1]]
 		tmpTime = sig_time[index[0] : index[1]]
+		tmpRef = reference[index[0] : index[1]]
+		tmpRefTime = ref_time[index[0] : index[1]]
 		#Mixes the intensity signal with the normal and phase shifted reference signals.
-		mixed, even_time = mix_no_fit(tmpSig, tmpTime, reference, ref_time)
+		mixed, even_time = mix_no_fit(tmpSig, tmpTime, tmpRef, tmpRefTime, interpolate)
 		#Applies lowpass filter
 		tmpMags = apply_lowpass_no_fit(mixed, even_time, cutoff)
 		mags_list.append(np.asarray(tmpMags))
