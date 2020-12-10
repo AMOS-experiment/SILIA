@@ -1,6 +1,5 @@
 import numpy as np
-from numpy.fft import rfft, irfft
-from tqdm import tqdm
+from numpy.fft import rfft, irfft, rfftfreq
 from tqdm import trange
 import scipy.interpolate
 import scipy.stats as sp
@@ -106,17 +105,11 @@ def fft_lowpass(data, cutoff, f_s, time):
 	"""
 	n = len(data)
 	fourier = rfft(data)
-	frequencies = np.fft.rfftfreq(len(time)) * f_s
-	index_upper = 0
-	for index, freq in enumerate(frequencies):
-		if freq > cutoff:
-			index_upper = index
-			break
-
-	for index, freq in enumerate(frequencies):
-		if index >= index_upper:
-			fourier[index] = 0
-	fourier *= 2
+	frequencies = rfftfreq(len(time)) * f_s
+	index_upper = int(cutoff * len(time)/f_s)
+	mask = np.zeros(fourier.size)
+	mask[range(index_upper + 1)] = 2
+	fourier *= mask
 	filtered_signal = irfft(fourier)
 	return filtered_signal
 
@@ -156,7 +149,7 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff):
 		filteredColumn = fft_lowpass(data, cutoff, sample_rate, time)
 		filteredColumn_phaseShift = fft_lowpass(data_phaseShift, cutoff, sample_rate, time)
 		values = np.sqrt(np.power(np.absolute(filteredColumn), 2) + np.power(np.absolute(filteredColumn_phaseShift), 2))
-		angles = np.arctan(np.absolute(filteredColumn_phaseShift)/np.absolute(filteredColumn))
+		angles = np.arctan2(filteredColumn_phaseShift/filteredColumn)
 		angle = np.mean(angles)
 		value = np.mean(values)
 		r.append(value)
