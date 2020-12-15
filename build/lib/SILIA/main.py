@@ -8,11 +8,14 @@ class Amplifier:
 	A software Lock-in Amplifier
 	"""
 
-	def __init__(self, cutoff):
+	def __init__(self, cutoff, pbar = True):
 		"""
 		Takes in a cutoff frequency (float) as an input
+		as well as whether or not to display the progress
+		bar.
 		"""
 		self.cutoff = cutoff
+		self.pbar = pbar
 
 	def update_cutoff(self, new_cutoff):
 		"""
@@ -61,13 +64,13 @@ class Amplifier:
 				signal = np.reshape(signal, (size[0], arr_len))
 
 				#Applies lock-in with errorbars
-				curr_magnitudes, curr_angles, curr_mag_err, curr_phase_err, indices = lock_in(signal,
-				 time, est_freq, est_phase, self.cutoff, num_windows, window_size, interpolate)
+				curr_magnitudes, curr_angles, curr_mag_err, curr_phase_err, indices = lock_in(self, signal,
+				 time, est_freq, est_phase, num_windows, window_size, interpolate)
 
 				#Applies lock-in for results - only necessary if there is more than one window.
 				if num_windows != 1:
-					curr_magnitudes, curr_angles, _, _, _ = lock_in(signal,
-					 time, est_freq, est_phase, self.cutoff, num_windows = 1, window_size = 1,
+					curr_magnitudes, curr_angles, _, _, _ = lock_in(self,signal,
+					 time, est_freq, est_phase, num_windows = 1, window_size = 1,
 					  interpolate = interpolate)
 
 				magnitudes.append(curr_magnitudes)
@@ -112,13 +115,13 @@ class Amplifier:
 				signal = np.reshape(signal, (size[0], arr_len))
 
 				#Applies lock-in with errorbars
-				curr_magnitudes, curr_mag_err, indices = lock_in_no_fit(signal, sig_time, ref_sig, 
-					ref_time, self.cutoff, num_windows, window_size, interpolate)
+				curr_magnitudes, curr_mag_err, indices = lock_in_no_fit(self, signal, sig_time, ref_sig, 
+					ref_time, num_windows, window_size, interpolate)
 
 				#Applies lock-in for results - only necessary if there is more than one window.
 				if num_windows != 1:
-					curr_magnitudes, _, _ = lock_in_no_fit(signal, sig_time, ref_sig,
-						ref_time, self.cutoff, num_windows = 1, window_size = 1,
+					curr_magnitudes, _, _ = lock_in_no_fit(self,signal, sig_time, ref_sig,
+						ref_time, num_windows = 1, window_size = 1,
 						 interpolate = interpolate)
 
 				magnitudes.append(curr_magnitudes)
