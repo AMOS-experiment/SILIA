@@ -246,7 +246,7 @@ Runtime vs Input Samples
 '''
 
 input_runtimes = {}
-runtime_types = ['with fit and interp', 'without fit with interp', 'with fit without interp', 'without fit and interp']
+runtime_types = ['with fit and interp.', 'without fit with interp.', 'with fit without interp.', 'without fit and interp.']
 num_samples_list = np.round(np.power(1.1, np.arange(50, 122, 1)))
 num_channels = 1
 num_references = 1
@@ -267,19 +267,19 @@ for runtime_type in runtime_types:
         LIA = SILIA.Amplifier(0, pbar = False)
         runtime = 0
         for i in range(num_averages):
-            if runtime_type == 'with fit and interp':
+            if runtime_type == 'with fit and interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, interpolate = True)
                 end = timeit.default_timer()
-            elif runtime_type == 'without fit with interp':
+            elif runtime_type == 'without fit with interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = False, interpolate = True)
                 end = timeit.default_timer()
-            elif runtime_type == 'with fit without interp':
+            elif runtime_type == 'with fit without interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = True, interpolate = False)
                 end = timeit.default_timer()
-            elif runtime_type == 'without fit and interp':
+            elif runtime_type == 'without fit and interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = False, interpolate = False)
                 end = timeit.default_timer()
@@ -289,11 +289,18 @@ for runtime_type in runtime_types:
 
 
 #Plotting the result:
-fig, ax = plt.subplots()
-for runtime_type in runtime_types:
-    ax.plot(num_samples_list, input_runtimes[runtime_type], label = runtime_type)
+formats = ['r-', 'b-', 'y-', 'k-']
+fig, ax = plt.subplots(1,1,figsize = (3,3))
+for item in (ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(15)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
+    item.set_fontsize(17)
+
+
+for j, runtime_type in enumerate(runtime_types):
+    ax.plot(num_samples_list/10**5, input_runtimes[runtime_type], formats[j], label = runtime_type)
 plt.legend()
-plt.xlabel('Input Samples')
+plt.xlabel(r'Input Samples (x$10^5$)')
 plt.ylabel('Runtime (s)')
 plt.savefig('fig_4b.svg', bbox_inches='tight')
 
@@ -302,7 +309,7 @@ Runtime vs Channels
 '''
 
 channels_runtimes = {}
-runtime_types = ['with fit and interp', 'without fit with interp', 'with fit without interp', 'without fit and interp']
+runtime_types = ['with fit and interp.', 'without fit with interp.', 'with fit without interp.', 'without fit and interp.']
 num_channels_list = np.arange(100, 1001, 100)
 num_samples = 4096
 num_references = 1
@@ -323,19 +330,19 @@ for runtime_type in runtime_types:
         LIA = SILIA.Amplifier(0, pbar = False)
         runtime = 0
         for i in range(num_averages):
-            if runtime_type == 'with fit and interp':
+            if runtime_type == 'with fit and interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, interpolate = True)
                 end = timeit.default_timer()
-            elif runtime_type == 'without fit with interp':
+            elif runtime_type == 'without fit with interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = False, interpolate = True)
                 end = timeit.default_timer()
-            elif runtime_type == 'with fit without interp':
+            elif runtime_type == 'with fit without interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = True, interpolate = False)
                 end = timeit.default_timer()
-            elif runtime_type == 'without fit and interp':
+            elif runtime_type == 'without fit and interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = False, interpolate = False)
                 end = timeit.default_timer()
@@ -345,9 +352,15 @@ for runtime_type in runtime_types:
 
 
 #Plotting the result:
-fig, ax = plt.subplots()
-for runtime_type in runtime_types:
-    ax.plot(num_channels_list, channels_runtimes[runtime_type], label = runtime_type)
+formats = ['r-', 'b-', 'y-', 'k-']
+fig, ax = plt.subplots(1,1,figsize = (3,3))
+for item in (ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(15)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
+    item.set_fontsize(17)
+
+for j, runtime_type in enumerate(runtime_types):
+    ax.plot(num_channels_list, channels_runtimes[runtime_type], formats[j], label = runtime_type)
 plt.legend()
 plt.xlabel('Channels')
 plt.ylabel('Runtime (s)')
@@ -359,7 +372,7 @@ Runtime vs Number of Frequency References
 '''
 
 ref_runtimes = {}
-runtime_types = ['with fit and interp', 'without fit with interp', 'with fit without interp', 'without fit and interp']
+runtime_types = ['with fit and interp.', 'without fit with interp.', 'with fit without interp.', 'without fit and interp.']
 num_channels = 1
 num_samples = 4096
 num_references_list = np.arange(1, 11, 1)
@@ -382,19 +395,19 @@ for runtime_type in runtime_types:
         LIA = SILIA.Amplifier(0, pbar = False)
         runtime = 0
         for i in range(num_averages):
-            if runtime_type == 'with fit and interp':
+            if runtime_type == 'with fit and interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, interpolate = True)
                 end = timeit.default_timer()
-            elif runtime_type == 'without fit with interp':
+            elif runtime_type == 'without fit with interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = False, interpolate = True)
                 end = timeit.default_timer()
-            elif runtime_type == 'with fit without interp':
+            elif runtime_type == 'with fit without interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = True, interpolate = False)
                 end = timeit.default_timer()
-            elif runtime_type == 'without fit and interp':
+            elif runtime_type == 'without fit and interp.':
                 start = timeit.default_timer()
                 out = LIA.amplify(references, signal, fit_ref = False, interpolate = False)
                 end = timeit.default_timer()
@@ -404,9 +417,16 @@ for runtime_type in runtime_types:
 
 
 #Plotting the result:
-fig, ax = plt.subplots()
-for runtime_type in runtime_types:
-    ax.plot(num_references_list, ref_runtimes[runtime_type], label = runtime_type)
+formats = ['r-', 'b-', 'y-', 'k-']
+fig, ax = plt.subplots(1,1,figsize = (3,3))
+for item in (ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(15)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
+    item.set_fontsize(17)
+
+
+for j, runtime_type in enumerate(runtime_types):
+    ax.plot(num_references_list, ref_runtimes[runtime_type], formats[j], label = runtime_type)
 plt.legend()
 plt.xlabel('Frequency References')
 plt.ylabel('Runtime (s)')
