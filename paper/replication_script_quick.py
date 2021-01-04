@@ -737,11 +737,11 @@ dat['signal'] = clean_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(clean_signal[0]))
-img_on.save('fig_9a_right')
+img_on.save('fig_9a_right.svg')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(clean_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9a_left')
+img_off.save('fig_9a_left.svg')
 
 
 mean = 0
@@ -752,24 +752,24 @@ dat['signal'] = noisy_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(noisy_signal[0]))
-img_on.save('fig_9b_right')
+img_on.save('fig_9b_right.svg')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(noisy_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9b_left')
+img_off.save('fig_9b_left.svg')
 
 
 LIA = SILIA.Amplifier(0)
 out = aLIA.amplify(references, dat, fit_ref = True, interpolate = False)
 mags = np.asarray(out['reference 1']['magnitudes'])
 img = Image.fromarray(np.uint8(mags))
-img.save('fig_9c_initial')
+img.save('fig_9c_initial.svg')
 
 
 corrected = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
 corrected[corrected > 255] = 255
 img = Image.fromarray(np.uint8(corrected))
-img.save('fig_9c_corrected')
+img.save('fig_9c_corrected.svg')
 
 
 #Fig. 9d, e, f
@@ -787,11 +787,11 @@ dat['signal'] = clean_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(clean_signal[0]))
-img_on.save('fig_9d_right')
+img_on.save('fig_9d_right.svg')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(clean_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9d_left')
+img_off.save('fig_9d_left.svg')
 
 
 mean = 0
@@ -802,21 +802,21 @@ dat['signal'] = noisy_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(noisy_signal[0]))
-img_on.save('fig_9e_right')
+img_on.save('fig_9e_right.svg')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(noisy_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9e_left')
+img_off.save('fig_9e_left.svg')
 
 
 LIA = SILIA.Amplifier(0)
 out = aLIA.amplify(references, dat, fit_ref = True, interpolate = False)
 mags = np.asarray(out['reference 1']['magnitudes'])
 img = Image.fromarray(np.uint8(mags))
-img.save('fig_9f_initial')
+img.save('fig_9f_initial.svg')
 
 
 corrected = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
 corrected[corrected > 255] = 255
 img = Image.fromarray(np.uint8(corrected))
-img.save('fig_9f_corrected')
+img.save('fig_9f_corrected.svg')
