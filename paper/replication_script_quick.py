@@ -726,7 +726,6 @@ references = [{'time' : time, 'signal' : scipy.signal.square(2 * np.pi * freq * 
 
 image = Image.open('Fluoresence-Microscopy.png').convert('RGB')
 arr = np.asarray(image)
-print(arr.shape)
 clean_signal = []
 for t in tqdm(time):
     clean_signal.append((0.5 * scipy.signal.square(2 * np.pi * freq * t) + 0.5) * arr)
@@ -737,11 +736,11 @@ dat['signal'] = clean_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(clean_signal[0]))
-img_on.save('fig_9a_right.svg')
+img_on.save('fig_9a_right.png')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(clean_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9a_left.svg')
+img_off.save('fig_9a_left.png')
 
 
 mean = 0
@@ -752,31 +751,30 @@ dat['signal'] = noisy_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(noisy_signal[0]))
-img_on.save('fig_9b_right.svg')
+img_on.save('fig_9b_right.png')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(noisy_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9b_left.svg')
+img_off.save('fig_9b_left.png')
 
 
 LIA = SILIA.Amplifier(0)
-out = aLIA.amplify(references, dat, fit_ref = True, interpolate = False)
+out = LIA.amplify(references, dat, fit_ref = True, interpolate = False)
 mags = np.asarray(out['reference 1']['magnitudes'])
 img = Image.fromarray(np.uint8(mags))
-img.save('fig_9c_initial.svg')
+img.save('fig_9c_initial.png')
 
 
 corrected = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
 corrected[corrected > 255] = 255
 img = Image.fromarray(np.uint8(corrected))
-img.save('fig_9c_corrected.svg')
+img.save('fig_9c_corrected.png')
 
 
 #Fig. 9d, e, f
 
 image = Image.open('Lightsaber_blue.png').convert('RGB')
 arr = np.asarray(image)
-print(arr.shape)
 clean_signal = []
 for t in tqdm(time):
     clean_signal.append((0.5 * scipy.signal.square(2 * np.pi * freq * t) + 0.5) * arr)
@@ -787,11 +785,11 @@ dat['signal'] = clean_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(clean_signal[0]))
-img_on.save('fig_9d_right.svg')
+img_on.save('fig_9d_right.png')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(clean_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9d_left.svg')
+img_off.save('fig_9d_left.png')
 
 
 mean = 0
@@ -802,21 +800,21 @@ dat['signal'] = noisy_signal
 
 #Displaying when the sample is fluorescing
 img_on = Image.fromarray(np.uint8(noisy_signal[0]))
-img_on.save('fig_9e_right.svg')
+img_on.save('fig_9e_right.png')
 
 #Displaying when the sample is not fluorescing
 img_off = Image.fromarray(np.uint8(noisy_signal[sampling_rate//(2 * freq)]))
-img_off.save('fig_9e_left.svg')
+img_off.save('fig_9e_left.png')
 
 
 LIA = SILIA.Amplifier(0)
-out = aLIA.amplify(references, dat, fit_ref = True, interpolate = False)
+out = LIA.amplify(references, dat, fit_ref = True, interpolate = False)
 mags = np.asarray(out['reference 1']['magnitudes'])
 img = Image.fromarray(np.uint8(mags))
-img.save('fig_9f_initial.svg')
+img.save('fig_9f_initial.png')
 
 
 corrected = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
 corrected[corrected > 255] = 255
 img = Image.fromarray(np.uint8(corrected))
-img.save('fig_9f_corrected.svg')
+img.save('fig_9f_corrected.png')
