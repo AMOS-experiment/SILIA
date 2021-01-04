@@ -377,7 +377,9 @@ for runtime_type in runtime_types:
     print('type : ' + runtime_type, flush = True)
     for num_references in tqdm(num_references_list, leave = True, position = 0):
         time = np.arange(0, num_samples, 1)
-        references = [{'time' : time, 'signal' : np.sin(2 * np.pi * 1/10 * time)}]
+        references = []
+        for _ in range(num_references):
+            references.append({'time' : time, 'signal' : np.sin(2 * np.pi * 1/10 * time)})
         channels = np.arange(0, num_channels, 1)
         sig = []
         for channel in channels:
