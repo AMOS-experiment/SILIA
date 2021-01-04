@@ -15,7 +15,6 @@ from matplotlib import cm
 from matplotlib.ticker import FormatStrFormatter
 import csv
 from PIL import Image
-import json
 
 #Replicate Figures 2 and 3, as well as relevant results.
 print('Replicating Fig. 2, 3', flush = True)
@@ -288,8 +287,6 @@ for runtime_type in runtime_types:
             runtime += (end-start)
         tmpRuntimes.append(runtime/num_averages)
     input_runtimes[runtime_type] = tmpRuntimes
-with open('input_runtimes.json', 'w') as f:
-    json.dump(input_runtimes, f)
 
 #Plotting the result:
 formats = ['r-', 'b-', 'y-', 'k-']
@@ -353,9 +350,6 @@ for runtime_type in runtime_types:
             runtime += (end-start)
         tmpRuntimes.append(runtime/num_averages)
     channels_runtimes[runtime_type] = tmpRuntimes
-
-with open('channels_runtimes.json', 'w') as f:
-    json.dump(channels_runtimes, f)
 
 #Plotting the result:
 formats = ['r-', 'b-', 'y-', 'k-']
@@ -421,9 +415,6 @@ for runtime_type in runtime_types:
             runtime += (end-start)
         tmpRuntimes.append(runtime/num_averages)
     ref_runtimes[runtime_type] = tmpRuntimes
-
-with open('ref_runtimes.json', 'w') as f:
-    json.dump(ref_runtimes, f)
 
 #Plotting the result:
 formats = ['r-', 'b-', 'y-', 'k-']
