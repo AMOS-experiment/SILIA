@@ -708,7 +708,7 @@ time = np.arange(0, sim_time, 1/sampling_rate)
 #Frequency (Hz)
 freq = 100
 
-references = [{'time' : time, 'signal' : square(2 * np.pi * freq * time)}]
+references = [{'time' : time, 'signal' : scipy.signal.square(2 * np.pi * freq * time)}]
 
 
 image = Image.open('Fluoresence-Microscopy.png').convert('RGB')
@@ -716,7 +716,7 @@ arr = np.asarray(image)
 print(arr.shape)
 clean_signal = []
 for t in tqdm(time):
-    clean_signal.append((0.5 * square(2 * np.pi * freq * t) + 0.5) * arr)
+    clean_signal.append((0.5 * scipy.signal.square(2 * np.pi * freq * t) + 0.5) * arr)
 clean_signal = np.asarray(clean_signal)
 #Adding the time axis to our data
 dat = {'time' : time}
@@ -766,7 +766,7 @@ arr = np.asarray(image)
 print(arr.shape)
 clean_signal = []
 for t in tqdm(time):
-    clean_signal.append((0.5 * square(2 * np.pi * freq * t) + 0.5) * arr)
+    clean_signal.append((0.5 * scipy.signal.square(2 * np.pi * freq * t) + 0.5) * arr)
 clean_signal = np.asarray(clean_signal)
 #Adding the time axis to our data
 dat = {'time' : time}
