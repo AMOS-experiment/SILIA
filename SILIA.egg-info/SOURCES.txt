@@ -4,6 +4,8 @@ SILIA/__init__.py
 SILIA/helper.py
 SILIA/main.py
 SILIA/reference_signal.py
+SILIA/test_helper.py
+SILIA/test_reference_signal.py
 SILIA.egg-info/PKG-INFO
 SILIA.egg-info/SOURCES.txt
 SILIA.egg-info/dependency_links.txt

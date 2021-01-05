@@ -38,7 +38,7 @@ def mix(signal, time, est_freq, est_phase, interpolate, pbar):
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
 	by the fitted reference signal as well as its pi/2 phase shift.
-	Also performs cubic interpolation on the input so the mixed signal has
+	Also performs linear interpolation on the input so the mixed signal has
 	consistent timesteps and applies the Hanning window to 
 	mitigate sidelobes. 
 	Parameters
@@ -66,18 +66,18 @@ def mix(signal, time, est_freq, est_phase, interpolate, pbar):
 		min_time = min(time)
 		max_time = max(time)
 		len_time = len(time)
-		timestep = (max(time) - min(time))/len(time)
+		timestep = (max_time - min_time)/len_time
 		even_time = np.arange(min_time, max_time, timestep)
 		interpolated = scipy.interpolate.interp1d(time, signal, bounds_error=False,
-		 kind='cubic', axis = 0, fill_value = "extrapolate")
+		 kind='linear', axis = 0, fill_value = "extrapolate")
 		signal = interpolated(even_time)
 		ref_vals = refValue(even_time, est_freq, est_phase)
 		ref_vals_phaseShift = refValue_phaseShift(even_time, est_freq, est_phase)
-	
+	else:
+		ref_vals = refValue(time, est_freq, est_phase)
+		ref_vals_phaseShift = refValue_phaseShift(time, est_freq, est_phase)
+
 	num_rows = len(signal)
-	num_cols = len(signal[0])
-	ref_vals = refValue(time, est_freq, est_phase)
-	ref_vals_phaseShift = refValue_phaseShift(time, est_freq, est_phase)
 	mixed = np.multiply(signal, np.array([ref_vals]).T) * 2 #The 2 is a scaling factor
 	mixed_phaseShift = np.multiply(signal, np.array([ref_vals_phaseShift]).T) * 2 #The 2 is a scaling factor
 
@@ -94,8 +94,7 @@ def mix(signal, time, est_freq, est_phase, interpolate, pbar):
 def fft_lowpass(data, cutoff, f_s, timesteps):
 	"""
 	Lowpass filter using the numpy fft algorithm.
-	Used to filter the mixed signal for single channels.
-	zero pads the input data
+	Used to filter the mixed signal for single channels
 	Parameters
 	----------
 	data : 1D array of floats
@@ -166,14 +165,17 @@ def apply_lowpass(mixed, mixed_phaseShift, time, cutoff, pbar):
 		theta.append(angle)
 	return r, theta
 
-def split(sample_len, num_windows, window_size):  
+def split(sample_len, num_windows, window_prop):  
 	"""
 	Returns a list of approximate indices to split an array into 
-	'windows' windows where each window overlaps with
-	each other window by a proportion given by 
-	'overlap'. The sample_len is the length of the sample. 
+	num_windows windows where each window has a proportional size
+	given by window_prop (between 0 and 1). The sample_len is the
+	length of the sample. For example, a sample length of 100 split
+	into 4 windows with a window_prop of 0.25 would be split into 4
+	windows of 25 values each ranging from indices (0,25), (25,50),
+	(50,75) and (75,100)
 	"""
-	window_size = int(sample_len * window_size)
+	window_size = int(sample_len * window_prop)
 	if num_windows == 1:
 		return [(0, window_size)]
 	step_size = int((sample_len - window_size)/(num_windows - 1)) 
@@ -274,13 +276,12 @@ def lock_in(self, signal, time, est_freq, est_phase, num_windows, window_size, i
 
 
 # No fit functions
-
 def mix_no_fit(signal, sig_time, reference, ref_time, interpolate, pbar):
 	"""
 	Performs the signal mixing step of a lock in amplifier.
 	Mixes, or multiplies, the intensity signal for all channels
 	by the provided reference signal. 
-	Also performs cubic interpolation on the input so the mixed signal has
+	Also performs linear interpolation on the input so the mixed signal has
 	consistent timesteps and applies the Hanning window to 
 	mitigate sidelobes. This version cannot compute phase since phase is 
 	essentially meaningless for an arbitrarily complex reference input. 
@@ -300,22 +301,22 @@ def mix_no_fit(signal, sig_time, reference, ref_time, interpolate, pbar):
 		signal multiplied by reference signal.
 		Each row is a set of mixed values for each channel with a timestamp.
 	"""
+
 	if pbar:
 		print("Mixing...", flush = True)
 	if interpolate:
 		interpolated_sig = scipy.interpolate.interp1d(sig_time, signal, bounds_error=False,
-		 kind='cubic', axis = 0, fill_value = "extrapolate")
+		 kind='linear', axis = 0, fill_value = "extrapolate")
 		interpolated_ref = scipy.interpolate.interp1d(ref_time, reference, bounds_error=False,
-		 kind='cubic', axis = 0, fill_value = "extrapolate")
+		 kind='linear', axis = 0, fill_value = "extrapolate")
 		min_time = min(sig_time)
 		max_time = max(sig_time)
 		len_time = len(sig_time)
-		timestep = (max(sig_time) - min(sig_time))/len(sig_time)
+		timestep = (max_time - min_time)/len_time
 		even_time = np.arange(min_time, max_time, timestep)
 		signal = interpolated_sig(even_time)
 		reference = interpolated_ref(even_time)
 	num_rows = len(signal)
-	num_cols = len(signal[0])
 	mixed = np.multiply(signal, np.array([reference]).T) * 2 #The 2 is a scaling factor.
 
 	window = np.hanning(num_rows)
