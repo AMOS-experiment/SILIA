@@ -444,7 +444,7 @@ LIA = SILIA.Amplifier(0, pbar = False)
 freq = 100 #Hz
 time = np.arange(0, 10, 1/2000)
 num_averages = 100
-samples_per_cycle = 10
+samples_per_cycle = 20
 references = [{'time' : time, 'signal' : np.sin(2 * np.pi * freq * time)}]
 signal_to_noises = [0.25, 0.01]
 
