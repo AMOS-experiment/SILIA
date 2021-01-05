@@ -9,7 +9,7 @@ python setup.py install
 
 ## Examples/Tutorial
 
-For a tutorial on how to use the software, look at the jupyter notebook in the 'Example/' directory. In the notebook, we simulate a dataset but the data inputs can be readings from any experimental device or even old video given that they are formatted the correct way.
+For a tutorial on how to use the software, look at the jupyter notebook in the 'Example/' directory. In the examples, we simulate a dataset but the data inputs can be readings from any experimental device or even old video given that they are formatted the correct way.
 
 ## Testing
 
