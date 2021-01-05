@@ -6,6 +6,10 @@ To install, open terminal as admin, navigate to the package directory and run
 ~~~ 
 python setup.py install
 ~~~
+### Dependencies
+
+This software requires Python >= 3.7 as well as working installations of numpy, scipy, tqdm, and pytest. 
+
 
 ## Examples/Tutorial
 
