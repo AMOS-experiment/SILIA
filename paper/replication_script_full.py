@@ -138,7 +138,7 @@ for item in (ax.get_xticklabels() + ax.get_yticklabels()):
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
 ax.set_xlabel("Channel")
-ax.set_ylabel("Signal:Noise")
+ax.set_ylabel("Power")
 plt.legend(bbox_to_anchor = (1, 0.5), loc = "center left", fontsize = 'x-large')
 plt.savefig('fig_2.svg', bbox_inches = 'tight')
 
