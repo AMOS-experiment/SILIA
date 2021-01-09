@@ -2,10 +2,19 @@
 
 A software implementation of a multi channel and multi frequency lock-in amplifier to extract periodic features from data
 
-To install, open terminal as admin, navigate to the package directory and run 
-~~~ 
-python setup.py install
+To install you can clone the repository and ```cd``` into the SILIA folder. 
+
 ~~~
+$ git clone https://github.com/AMOS-experiment/SILIA.git
+$ cd SILIA
+~~~
+
+After cloning the repo, run
+~~~ 
+$ python setup.py install
+~~~
+
+
 ### Dependencies
 
 This software requires Python >= 3.7 as well as working installations of numpy, scipy, tqdm, and pytest. 
@@ -19,7 +28,7 @@ For a tutorial on how to use the software, look at the jupyter notebook in the '
 
 To run our unit tests, navigate to the package directory and run
 ~~~ 
-pytest
+$ pytest
 ~~~
 These unit tests ensure certain functions are working correctly, but are not comprehensive. To confirm that SILIA runs properly, we recommend running the tutorial and examples. 
 
