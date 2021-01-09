@@ -2,16 +2,16 @@
 
 A software implementation of a multi channel and multi frequency lock-in amplifier to extract periodic features from data
 
-To install you can clone the repository and ```cd``` into the SILIA folder. 
+To install you can first clone the repository and ```cd``` into the SILIA folder. 
 
 ~~~
 $ git clone https://github.com/AMOS-experiment/SILIA.git
 $ cd SILIA
 ~~~
 
-After cloning the repo, run
+Then, run
 ~~~ 
-$ python setup.py install
+$ pip install -e . -r requirements.txt
 ~~~
 
 
