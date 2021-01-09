@@ -17,7 +17,7 @@ $ pip install -e . -r requirements.txt
 
 ### Dependencies
 
-This software requires Python >= 3.7 as well as working installations of numpy, scipy, tqdm, and pytest. 
+This software requires Python3 as well as working installations of numpy, scipy, tqdm, and pytest. 
 
 
 ## Examples/Tutorial
