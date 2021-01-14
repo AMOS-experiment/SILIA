@@ -304,7 +304,7 @@ for j, runtime_type in enumerate(runtime_types):
 plt.legend()
 plt.xlabel(r'Input Samples (x$10^5$)')
 plt.ylabel('Runtime (s)')
-plt.savefig('fig_4b.svg', bbox_inches='tight')
+plt.savefig('fig_4c.svg', bbox_inches='tight')
 
 '''
 Runtime vs Channels
@@ -432,7 +432,7 @@ for j, runtime_type in enumerate(runtime_types):
 plt.legend()
 plt.xlabel('Frequency References')
 plt.ylabel('Runtime (s)')
-plt.savefig('fig_4c.svg', bbox_inches='tight')
+plt.savefig('fig_4b.svg', bbox_inches='tight')
 
 
 #Replicate Figure 5
