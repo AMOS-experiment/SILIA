@@ -43,6 +43,6 @@ Below, an overview of the lock-in process. The reference fitting step can also b
 ![Alt text](images/general_code_diagram.png?raw=true "General Code Summary")
 
 ## Design
-When designing SILIA, we had two principles in mind. The first was that no software can be designed with the foresight to include features for all of its possible use cases without being overwhelmingly complex. And the second was, a user-friendly interface is essential for a software package to be widely accepted. As a result, we focused on writing code that can easily be understood and edited for specific use cases while also ensuring SILIA is easy to use and minimizes data preparation time. Given some software experience and basic knoweldge of lock-in amplifiers, the code in the main SILIA folder should be relatively simple to understand and/or customize. 
+When designing SILIA, we had two principles in mind. The first was that no software can be designed with the foresight to include features for all of its possible use cases without being overwhelmingly complex. And the second was, a user-friendly interface is essential for a software package to be widely accepted. As a result, we focused on writing code that can easily be understood and edited for specific use cases while also ensuring SILIA is easy to use and minimizes data preparation time. Given some software experience and basic knoweldge of lock-in amplifiers, SILIA is very easy to use.
 
 Please ask Amrut Nadgir (amrut.nadgir@gmail.com) or Richard Thurston (rthurston@lbl.gov) if you have any questions. 
