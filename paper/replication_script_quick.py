@@ -758,7 +758,3 @@ corrected = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
 corrected[corrected > 255] = 255
 img = Image.fromarray(np.uint8(corrected))
 img.save('fig_9c.png')
-
-difference = np.abs(arr - corrected)
-img = Image.fromarray(np.uint8(difference))
-img.save('fig_9d.png')
