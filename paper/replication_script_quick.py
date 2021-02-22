@@ -17,7 +17,6 @@ import csv
 from PIL import Image
 
 
-plt.rcParams['pcolor.shading'] = 'auto'
 #Replicate Figures 2 and 3, as well as relevant results.
 print('Replicating Fig. 2, 3', flush = True)
 '''
