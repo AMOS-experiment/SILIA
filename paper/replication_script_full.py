@@ -543,7 +543,7 @@ time = np.arange(0, 10, 1/2000)
 num_cycles = 5000
 references = [{'time' : time, 'signal' : np.sin(2 * np.pi * freq * time)}]
 signal_to_noises = [0.25, 0.01]
-
+net_samples_per_cycle = np.arange(2, 100, 1)
 
 out_dict_phase = {'error squared' : {}, 'standard error' : {}, 'sampling rates' : []}
 out_dict_mags = {'error squared' : {}, 'standard error' : {}, 'sampling rates' : []}
@@ -554,7 +554,7 @@ for snr in signal_to_noises:
     std_errs_mags = []
     sampling_rates = []
     print('Signal to Noise: ' + str(snr), flush = True)
-    for samples_per_cycle in tqdm(np.arange(2, 100, 1), leave = True, position = 0):
+    for samples_per_cycle in tqdm(net_samples_per_cycle, leave = True, position = 0):
         sampling_rates.append(samples_per_cycle)
         raw_phases = []
         raw_mags = []
@@ -612,8 +612,8 @@ ax.set_xlabel('Samples Per Cycle')
 ax.set_ylabel(r'Mag. Error$^2$')
 ax.set_yscale('log', basey = 10)
 sampling_rates = np.asarray(dat['sampling rates'])
-ax.plot(sampling_rates, 1/(2 * signal_to_noises[0]) * 1/num_cycles * np.ones((sampling_rates.size)), 'b--')
-ax.plot(sampling_rates, 1/(2 * signal_to_noises[1]) * 1/num_cycles * np.ones((sampling_rates.size)), 'r--')
+ax.plot(sampling_rates, 1/(2 * signal_to_noises[0]) * 1/(num_cycles*net_samples_per_cycle), 'b--')
+ax.plot(sampling_rates, 1/(2 * signal_to_noises[1]) * 1/(num_cycles*net_samples_per_cycle), 'r--')
 plt.legend(title = 'SNR')
 plt.savefig('fig_5b.svg', bbox_inches='tight')
 
