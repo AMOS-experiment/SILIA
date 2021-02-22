@@ -721,24 +721,33 @@ sim_time = .5 #second
 #Time axis
 time = np.arange(0, sim_time, 1/sampling_rate)
 #Frequency (Hz)
-freq = 100
+freqs = [100, 75]
 
-references = [{'time' : time, 'signal' : scipy.signal.square(2 * np.pi * freq * time)}]
+references = [{'time' : time, 'signal' : scipy.signal.square(2 * np.pi * freq * time)} for freq in freqs]
 
 
-image = Image.open('FluorescentCells.jpg').convert('RGB')
-arr = np.asarray(image)
+image1 = Image.open('FluorescentCells.jpg').convert('RGB')
+arr1 = np.asarray(image1)
+image1.save('fig_9a.png')
+
+image2 = Image.open('lymph_node.jpg').convert('RGB')
+arr2 = np.asarray(image2)[:512,:512]
+image2 = Image.fromarray(np.uint8(arr2))
+image2.save('fig_9b.png')
+
 clean_signal = []
 for t in tqdm(time):
-    clean_signal.append((0.5 * scipy.signal.square(2 * np.pi * freq * t) + 0.5) * arr)
+    clean_signal.append((0.5 * scipy.signal.square(2 * np.pi * freqs[0] * t) + 0.5) * arr1\
+        + (0.5 * scipy.signal.square(2 * np.pi * freqs[1] * t) + 0.5) * arr2)
 clean_signal = np.asarray(clean_signal)
 #Adding the time axis to our data
 dat = {'time' : time}
 dat['signal'] = clean_signal
 
-#Displaying when the sample is fluorescing
-img_on = Image.fromarray(np.uint8(clean_signal[0]))
-img_on.save('fig_9a.png')
+
+#Displaying when both samples are fluorescing
+img_mixed = Image.fromarray(np.uint8(clean_signal[0]))
+img_mixed.save('fig_9c.png')
 
 
 mean = 0
@@ -747,14 +756,20 @@ noisy_signal = np.random.normal(mean, standard_deviation, clean_signal.shape) + 
 dat['signal'] = noisy_signal
 
 
-#Displaying when the sample is fluorescing
-img_on = Image.fromarray(np.uint8(noisy_signal[0]))
-img_on.save('fig_9b.png')
+#Displaying when both samples are fluorescing
+img_noisy = Image.fromarray(np.uint8(noisy_signal[0]))
+img_noisy.save('fig_9d.png')
 
 
 LIA = SILIA.Amplifier(0)
 out = LIA.amplify(references, dat, fit_ref = True, interpolate = False)
-corrected = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
-corrected[corrected > 255] = 255
-img = Image.fromarray(np.uint8(corrected))
-img.save('fig_9c.png')
+corrected1 = (np.pi/2) * np.asarray(out['reference 1']['magnitudes'])
+corrected1[corrected1 > 255] = 255
+
+img = Image.fromarray(np.uint8(corrected1))
+img.save('fig_9e.png')
+
+corrected2 = (np.pi/2) * np.asarray(out['reference 2']['magnitudes'])
+corrected2[corrected2 > 255] = 255
+img = Image.fromarray(np.uint8(corrected2))
+img.save('fig_9f.png')
