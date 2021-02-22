@@ -9,11 +9,14 @@ $ git clone https://github.com/AMOS-experiment/SILIA.git
 $ cd SILIA
 ~~~
 
-Then, run
+Then, if installing using pip, run
 ~~~ 
 $ pip install -e . -r requirements.txt
 ~~~
-
+Or, if installing using Anaconda, run
+~~~
+$ conda install --file requirements.txt
+~~~
 
 ### Dependencies
 
