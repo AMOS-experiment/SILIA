@@ -451,7 +451,7 @@ freq = 100 #Hz
 ref_time = np.arange(0, 10, 1/2000)
 num_averages = 100
 samples_per_cycle = 20
-references = [{'time' : ref_time, 'signal' : np.sin(2 * np.pi * freq * time)}]
+references = [{'time' : ref_time, 'signal' : np.sin(2 * np.pi * freq * ref_time)}]
 signal_to_noises = [0.25, 0.01]
 
 
@@ -523,18 +523,16 @@ ax.set_xlabel(r'Samples (x$10^5$)')
 ax.set_yscale('log', base = 10)
 
 #Performing fit
-fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])], \
-    sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
-fit_params_1,cov_1=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[1])], \
-    sigma = np.array(dat['standard error'][str(signal_to_noises[1])]), absolute_sigma=True)
+fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])])
+fit_params_1,cov_1=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[1])])
 
 print('Fit Parameters for 0.25 SNR (Magnitude):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_0[0]),flush=True)
+print(r'n={0}'.format(fit_params_0[1]),flush=True)
 
 print('Fit Parameters for 0.01 SNR (Magnitude):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_1[0]),flush=True)
+print(r'n={0}'.format(fit_params_1[1]),flush=True)
 
 ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_0), 'k--',zorder=3)
 ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_1), 'k--',zorder=4)
@@ -559,18 +557,16 @@ ax.set_xlabel(r'Samples (x$10^5$)')
 ax.set_ylabel(r'Error$^2$')
 ax.set_yscale('log', base = 10)
 #Performing fit
-fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])],\
- sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
-fit_params_1,cov_1=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[1])],\
- sigma = np.array(dat['standard error'][str(signal_to_noises[1])]), absolute_sigma=True)
+fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])])
+fit_params_1,cov_1=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[1])])
 
 print('Fit Parameters for 0.25 SNR (Phase):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_0[0]),flush=True)
+print(r'n={0}'.format(fit_params_0[1]),flush=True)
 
 print('Fit Parameters for 0.01 SNR (Phase):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_1[0]),flush=True)
+print(r'n={0}'.format(fit_params_1[1]),flush=True)
 
 ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_0), 'k--',zorder=3)
 ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_1), 'k--',zorder=4)
@@ -646,18 +642,16 @@ ax.set_ylabel(r'Error$^2$')
 ax.set_yscale('log', base = 10)
 
 #Performing fit
-fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])],\
- sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
-fit_params_1,cov_1=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[1])],\
- sigma = np.array(dat['standard error'][str(signal_to_noises[1])]), absolute_sigma=True)
+fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])])
+fit_params_1,cov_1=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[1])])
 
 print('Fit Parameters for 0.25 SNR (Mags, Pink Noise):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_0[0]),flush=True)
+print(r'n={0}'.format(fit_params_0[1]),flush=True)
 
 print('Fit Parameters for 0.01 SNR (Mags, Pink Noise):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_1[0]),flush=True)
+print(r'n={0}'.format(fit_params_1[1]),flush=True)
 
 ax.plot(freqs, powerFunc(freqs, *fit_params_0), 'k--',zorder=3)
 ax.plot(freqs, powerFunc(freqs, *fit_params_1), 'k--',zorder=4)
@@ -683,18 +677,16 @@ ax.set_ylabel(r'Error$^2$')
 ax.set_yscale('log', base = 10)
 
 #Performing fit
-fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])],\
- sigma = np.array(dat['standard error'][str(signal_to_noises[0])]),absolute_sigma=True)
-fit_params_1,cov_1=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[1])],\
- sigma = np.array(dat['standard error'][str(signal_to_noises[1])]),absolute_sigma=True)
+fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])])
+fit_params_1,cov_1=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[1])])
 
 print('Fit Parameters for 0.25 SNR (Phase, Pink Noise):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_0[0]),flush=True)
+print(r'n={0}'.format(fit_params_0[1]),flush=True)
 
 print('Fit Parameters for 0.01 SNR (Phase, Pink Noise):',flush=True)
-print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
-print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+print(r'a={0}'.format(fit_params_1[0]),flush=True)
+print(r'n={0}'.format(fit_params_1[1]),flush=True)
 
 ax.plot(freqs, powerFunc(freqs, *fit_params_0), 'k--',zorder=3)
 ax.plot(freqs, powerFunc(freqs, *fit_params_1), 'k--',zorder=4)
