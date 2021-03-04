@@ -578,7 +578,7 @@ plt.savefig('fig_5b.svg', bbox_inches='tight')
 
 #First simulating results for various frequencies.
 freqs = np.arange(25,750,25) #Hz
-time = np.arange(0, 10, 1/2000)
+time = np.arange(0, 10, 1/4000)
 num_averages = 100
 
 signal_to_noises = [0.25, 0.01]

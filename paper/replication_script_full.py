@@ -450,7 +450,7 @@ def powerFunc(x,a,n):
 
 #First simulating signal and averaging error on lock-in output
 freq = 100 #Hz
-ref_time = np.arange(0, 10, 1/2000)
+ref_time = np.arange(0, 10, 1/4000)
 num_averages = 100
 samples_per_cycle = 20
 references = [{'time' : ref_time, 'signal' : np.sin(2 * np.pi * freq * ref_time)}]
