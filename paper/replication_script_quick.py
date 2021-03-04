@@ -1,3 +1,6 @@
+#Make sure to install the SILIA package as well as the modules, 
+#numpy, scipy, Pillow, matplotlib, tqdm, timeit, and colorednoise.
+
 import SILIA
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +18,8 @@ from matplotlib import cm
 from matplotlib.ticker import FormatStrFormatter
 import csv
 from PIL import Image
+import scipy.optimize as so
+import colorednoise as cn
 
 
 #Replicate Figures 2 and 3, as well as relevant results.
@@ -233,11 +238,6 @@ print('phase 80Hz predicted err: ' + str(phase1_err))
 print('phase 120Hz predicted err: ' + str(phase2_err))
 
 
-
-
-
-
-
 #Replicate Figure 4
 
 print('Replicating Fig. 4', flush = True)
@@ -440,11 +440,16 @@ print('Replicating Fig. 5', flush = True)
 
 LIA = SILIA.Amplifier(0, pbar = False)
 
+def powerFunc(x,a,n):
+    #Power function used for fitting
+    return a/(x)**n
 
-#Figure 5 a, c - magnitude and phase error vs number of cycles
+#Figure 5 a, b - magnitude and phase error vs data acquisition time
+
+#First simulating signal and averaging error on lock-in output
 freq = 100 #Hz
 time = np.arange(0, 10, 1/2000)
-num_averages = 25
+num_averages = 100
 samples_per_cycle = 20
 references = [{'time' : time, 'signal' : np.sin(2 * np.pi * freq * time)}]
 signal_to_noises = [0.25, 0.01]
@@ -459,25 +464,23 @@ for snr in signal_to_noises:
     std_errs_mags = []
     cycles = []
     print('Signal to Noise: ' + str(snr))
-    for num_cycles in tqdm(np.arange(20, 500, 10),leave = True, position = 0):
+    for num_cycles in tqdm(np.arange(20, 15000, 150),leave = True, position = 0):
         cycles.append(num_cycles)
         raw_phases = []
         raw_mags = []
-        for i in range(num_averages):
-            time = np.arange(0, num_cycles/freq, 1/freq * 1/samples_per_cycle)
-            channels = np.arange(0, 1, 1)
-            signal = {'time' : time}
-            sig_vals = []
-            for t in time:
-                row = []
-                for channel in channels:
-                    row.append(np.sin(2 * np.pi * freq * t) + np.random.normal(0, np.sqrt(0.5/snr)))
-                sig_vals.append(row)
 
-            signal['signal'] = sig_vals
-            out = LIA.amplify(references, signal)
-            raw_phases.append(out['reference 1']['phases'][0])
-            raw_mags.append(out['reference 1']['magnitudes'][0])
+        time = np.arange(0, num_cycles/freq, 1/freq * 1/samples_per_cycle)
+        channels = np.arange(0, num_averages, 1)
+        signal = {'time' : time}
+        sig_vals = []
+        for channel in channels:
+            column = np.sin(2 * np.pi * freq * time) + np.random.normal(0, np.sqrt(0.5/snr),time.size)
+            sig_vals.append(column)
+        sig_vals = np.transpose(sig_vals)
+        signal['signal'] = sig_vals
+        out = LIA.amplify(references, signal)
+        raw_phases = out['reference 1']['phases']
+        raw_mags = out['reference 1']['magnitudes']
 
         nobs_phase, minmax, mean_phase, variance_phase, skewness, kurtosis = sp.describe((0-np.array(raw_phases))**2)
         nobs_mags, minmax, mean_mags, variance_mags, skewness, kurtosis = sp.describe((1-np.array(raw_mags))**2)
@@ -498,80 +501,116 @@ for snr in signal_to_noises:
 cycles_phase_dat = out_dict_phase
 cycles_mags_dat = out_dict_mags
 
+
+#Plotting fig. 5a
 dat = cycles_mags_dat
+cycles = np.asarray(dat['cycles'])
+num_samples = cycles*samples_per_cycle
 fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 fig.set_size_inches([3,3])
-plt.errorbar(dat['cycles'], dat['error squared'][str(signal_to_noises[0])], yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), fmt='bo', capsize = 3, label = str(signal_to_noises[0]))
-plt.errorbar(dat['cycles'], dat['error squared'][str(signal_to_noises[1])], yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), fmt='ro', capsize = 3, label = str(signal_to_noises[1]))
+plt.errorbar(num_samples/10**5, dat['error squared'][str(signal_to_noises[0])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), \
+    fmt='o', color='orchid', capsize = 3, label = str(signal_to_noises[0]),zorder=1)
+plt.errorbar(num_samples/10**5, dat['error squared'][str(signal_to_noises[1])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), \
+    fmt='ro', capsize = 3, label = str(signal_to_noises[1]),zorder=2)
 for item in (ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontsize(15)
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
-ax.set_xlabel('Cycles')
-ax.set_ylabel(r'Mag. Error$^2$')
+ax.set_ylabel(r'Error$^2$')
+ax.set_xlabel(r'Samples (x$10^5$)')
 ax.set_yscale('log', basey = 10)
-cycles = np.asarray(dat['cycles'])
-ax.plot(cycles, 1/(signal_to_noises[0]) * 1/(cycles*samples_per_cycle), 'b--')
-ax.plot(cycles, 1/(signal_to_noises[1]) * 1/cycles*samples_per_cycle, 'r--')
-plt.legend(title = 'SNR')
+
+#Performing fit
+fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])], \
+    sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
+fit_params_1,cov_1=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[1])], \
+    sigma = np.array(dat['standard error'][str(signal_to_noises[1])]), absolute_sigma=True)
+
+print('Fit Parameters for 0.25 SNR (Magnitude):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+
+print('Fit Parameters for 0.01 SNR (Magnitude):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+
+ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_0), 'k--',zorder=3)
+ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_1), 'k--',zorder=4)
+plt.ylim(10**(-5)/2, 10**(0))
 plt.savefig('fig_5a.svg', bbox_inches='tight')
 
+#Plotting fig. 5b
 dat = cycles_phase_dat
 fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 fig.set_size_inches([3,3])
-plt.errorbar(dat['cycles'], dat['error squared'][str(signal_to_noises[0])], yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), fmt='bo', capsize = 3, label = str(signal_to_noises[0]))
-plt.errorbar(dat['cycles'], dat['error squared'][str(signal_to_noises[1])], yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), fmt='ro', capsize = 3, label = str(signal_to_noises[1]))
+plt.errorbar(num_samples/10**5, dat['error squared'][str(signal_to_noises[0])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), \
+    fmt='o', color='orchid', capsize = 3, label = str(signal_to_noises[0]),zorder=1)
+plt.errorbar(num_samples/10**5, dat['error squared'][str(signal_to_noises[1])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), \
+    fmt='ro', capsize = 3, label = str(signal_to_noises[1]),zorder=2)
 for item in (ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontsize(15)
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
-ax.set_xlabel('Cycles')
-ax.set_ylabel(r'Phase Error$^2$')
+ax.set_xlabel(r'Samples (x$10^5$)')
+ax.set_ylabel(r'Error$^2$')
 ax.set_yscale('log', basey = 10)
-plt.legend(title = 'SNR')
-plt.savefig('fig_5c.svg', bbox_inches='tight')
+#Performing fit
+fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])],\
+ sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
+fit_params_1,cov_1=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[1])],\
+ sigma = np.array(dat['standard error'][str(signal_to_noises[1])]), absolute_sigma=True)
+
+print('Fit Parameters for 0.25 SNR (Phase):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+
+print('Fit Parameters for 0.01 SNR (Phase):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+
+ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_0), 'k--',zorder=3)
+ax.plot(num_samples/10**5, powerFunc(num_samples, *fit_params_1), 'k--',zorder=4)
+plt.ylim(10**(-5)/2, 10**(0))
+plt.savefig('fig_5b.svg', bbox_inches='tight')
 
 
+#Plotting figures 5c,d
 
-#Figure 5b and d - magnitude and phase error vs sampling rate
-
-
-freq = 100 #Hz
-num_averages = 25
+#First simulating results for various frequencies.
+freqs = np.arange(25,750,25) #Hz
 time = np.arange(0, 10, 1/2000)
-num_cycles = 250
-references = [{'time' : time, 'signal' : np.sin(2 * np.pi * freq * time)}]
-signal_to_noises = [0.25, 0.01]
-net_samples_per_cycle = np.arange(2,100,2)
+num_averages = 100
 
-out_dict_phase = {'error squared' : {}, 'standard error' : {}, 'sampling rates' : []}
-out_dict_mags = {'error squared' : {}, 'standard error' : {}, 'sampling rates' : []}
+signal_to_noises = [0.25, 0.01]
+
+
+out_dict_phase = {'error squared' : {}, 'standard error' : {}, 'freqs' : freqs}
+out_dict_mags = {'error squared' : {}, 'standard error' : {}, 'freqs' : freqs}
 for snr in signal_to_noises:
     err_squared_phase = []
     std_errs_phase = []
     err_squared_mags = []
     std_errs_mags = []
-    sampling_rates = []
-    print('Signal to Noise: ' + str(snr), flush = True)
-    for samples_per_cycle in tqdm(net_samples_per_cycle), leave = True, position = 0):
-        sampling_rates.append(samples_per_cycle)
-        raw_phases = []
-        raw_mags = []
-        for i in range(num_averages):
-            time = np.arange(0, num_cycles/freq, 1/(samples_per_cycle * freq))
-            channels = np.arange(0, 1, 1)
-            signal = {'time' : time}
-            sig_vals = []
-            for t in time:
-                row = []
-                for channel in channels:
-                    row.append(np.sin(2 * np.pi * freq * t) + np.random.normal(0, np.sqrt(0.5/snr)))
-                sig_vals.append(row)
+    print('Signal to Noise: ' + str(snr))
+    for freq in tqdm(freqs,leave = True, position = 0):
+        references = [{'time' : time, 'signal' : np.sin(2 * np.pi * freq * time)}]
+        channels = np.arange(0, num_averages, 1)
+        signal = {'time' : time}
+        sig_vals = []
+        for column_num in range(num_averages):
+            column = np.sin(2 * np.pi * freq * time) + np.sqrt(.5/snr)*cn.powerlaw_psd_gaussian(1, time.size)
+            sig_vals.append(column)
+        sig_vals = np.transpose(sig_vals)
 
-            signal['signal'] = sig_vals
-            out = LIA.amplify(references, signal)
-            raw_phases.append(out['reference 1']['phases'][0])
-            raw_mags.append(out['reference 1']['magnitudes'][0])
+        signal['signal'] = sig_vals
+        out = LIA.amplify(references, signal)
+
+        raw_phases = out['reference 1']['phases']
+        raw_mags = out['reference 1']['magnitudes']
 
         nobs_phase, minmax, mean_phase, variance_phase, skewness, kurtosis = sp.describe((0-np.array(raw_phases))**2)
         nobs_mags, minmax, mean_mags, variance_mags, skewness, kurtosis = sp.describe((1-np.array(raw_mags))**2)
@@ -584,58 +623,83 @@ for snr in signal_to_noises:
         std_errs_mags.append(std_err_mags)
     out_dict_phase['error squared'][str(snr)] = err_squared_phase
     out_dict_phase['standard error'][str(snr)] = std_errs_phase
-    out_dict_phase['sampling rates'] = sampling_rates
+
     out_dict_mags['error squared'][str(snr)] = err_squared_mags
     out_dict_mags['standard error'][str(snr)] = std_errs_mags
-    out_dict_mags['sampling rates'] = sampling_rates
 
-
-samples_phase_dat = out_dict_phase
-samples_mags_dat = out_dict_mags
-
-
-dat = samples_mags_dat
+#Plotting fig.5c for magnitude error
+dat = out_dict_mags
 fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 fig.set_size_inches([3,3])
-plt.errorbar(dat['sampling rates'], dat['error squared'][str(signal_to_noises[0])],\
- yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), fmt='bo', capsize = 3, label = str(signal_to_noises[0]))
-
-plt.errorbar(dat['sampling rates'], dat['error squared'][str(signal_to_noises[1])],\
- yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), fmt='ro', capsize = 3, label = str(signal_to_noises[1]))
-
+plt.errorbar(dat['freqs'], dat['error squared'][str(signal_to_noises[0])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), \
+    fmt='o', color='orchid', capsize = 3, label = str(signal_to_noises[0]))
+plt.errorbar(dat['freqs'], dat['error squared'][str(signal_to_noises[1])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), \
+    fmt='ro', capsize = 3, label = str(signal_to_noises[1]))
 for item in (ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontsize(15)
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
-ax.set_xlabel('Samples Per Cycle')
-ax.set_ylabel(r'Mag. Error$^2$')
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel(r'Error$^2$')
 ax.set_yscale('log', basey = 10)
-sampling_rates = np.asarray(dat['sampling rates'])
-ax.plot(sampling_rates, 1/(signal_to_noises[0]) * 1/(num_cycles*net_samples_per_cycle), 'b--')
-ax.plot(sampling_rates, 1/(signal_to_noises[1]) * 1/(num_cycles*net_samples_per_cycle), 'r--')
-plt.legend(title = 'SNR')
-plt.savefig('fig_5b.svg', bbox_inches='tight')
 
+#Performing fit
+fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])],\
+ sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
+fit_params_1,cov_1=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[1])],\
+ sigma = np.array(dat['standard error'][str(signal_to_noises[1])]), absolute_sigma=True)
 
-dat = samples_phase_dat
+print('Fit Parameters for 0.25 SNR (Mags, Pink Noise):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+
+print('Fit Parameters for 0.01 SNR (Mags, Pink Noise):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+
+ax.plot(freqs, powerFunc(freqs, *fit_params_0), 'k--',zorder=3)
+ax.plot(freqs, powerFunc(freqs, *fit_params_1), 'k--',zorder=4)
+plt.ylim(10**(-5), 10**(1))
+plt.savefig('fig_5c.svg', bbox_inches='tight')
+
+#Plotting fig.5d for phase error
+dat = out_dict_phase
 fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 fig.set_size_inches([3,3])
-
-
-plt.errorbar(dat['sampling rates'], dat['error squared']['0.25'],\
- yerr =np.array(dat['standard error']['0.25']), fmt='bo', capsize = 3, label = '0.25')
-
-plt.errorbar(dat['sampling rates'], dat['error squared']['0.01'],\
- yerr =np.array(dat['standard error']['0.01']), fmt='ro', capsize = 3, label = '0.01')
-
+plt.errorbar(dat['freqs'], dat['error squared'][str(signal_to_noises[0])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[0])]), \
+    fmt='o', color='orchid', capsize = 3, label = str(signal_to_noises[0]))
+plt.errorbar(dat['freqs'], dat['error squared'][str(signal_to_noises[1])], \
+    yerr =np.array(dat['standard error'][str(signal_to_noises[1])]), \
+    fmt='ro', capsize = 3, label = str(signal_to_noises[1]))
 for item in (ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontsize(15)
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
-ax.set_xlabel('Samples Per Cycle')
-ax.set_ylabel(r'Phase Error$^2$')
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel(r'Error$^2$')
 ax.set_yscale('log', basey = 10)
-plt.legend(title = 'SNR')
+
+#Performing fit
+fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])],\
+ sigma = np.array(dat['standard error'][str(signal_to_noises[0])]),absolute_sigma=True)
+fit_params_1,cov_1=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[1])],\
+ sigma = np.array(dat['standard error'][str(signal_to_noises[1])]),absolute_sigma=True)
+
+print('Fit Parameters for 0.25 SNR (Phase, Pink Noise):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_0[0],cov_0[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_0[1],cov_0[1][1]),flush=True)
+
+print('Fit Parameters for 0.01 SNR (Phase, Pink Noise):',flush=True)
+print(r'a={0} +- {1}'.format(fit_params_1[0],cov_1[0][0]),flush=True)
+print(r'n={0} +- {1}'.format(fit_params_1[1],cov_1[1][1]),flush=True)
+
+ax.plot(freqs, powerFunc(freqs, *fit_params_0), 'k--',zorder=3)
+ax.plot(freqs, powerFunc(freqs, *fit_params_1), 'k--',zorder=4)
+plt.ylim(10**(-5), 10**(1))
+
 plt.savefig('fig_5d.svg', bbox_inches='tight')
 
 #Figure 5e
