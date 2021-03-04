@@ -450,10 +450,10 @@ def powerFunc(x,a,n):
 
 #First simulating signal and averaging error on lock-in output
 freq = 100 #Hz
-time = np.arange(0, 10, 1/2000)
+ref_time = np.arange(0, 10, 1/2000)
 num_averages = 100
 samples_per_cycle = 20
-references = [{'time' : time, 'signal' : np.sin(2 * np.pi * freq * time)}]
+references = [{'time' : ref_time, 'signal' : np.sin(2 * np.pi * freq * time)}]
 signal_to_noises = [0.25, 0.01]
 
 
@@ -522,7 +522,7 @@ for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
 ax.set_ylabel(r'Error$^2$')
 ax.set_xlabel(r'Samples (x$10^5$)')
-ax.set_yscale('log', basey = 10)
+ax.set_yscale('log', base = 10)
 
 #Performing fit
 fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])], \
@@ -559,7 +559,7 @@ for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
 ax.set_xlabel(r'Samples (x$10^5$)')
 ax.set_ylabel(r'Error$^2$')
-ax.set_yscale('log', basey = 10)
+ax.set_yscale('log', base = 10)
 #Performing fit
 fit_params_0,cov_0=so.curve_fit(powerFunc,num_samples, dat['error squared'][str(signal_to_noises[0])],\
  sigma = np.array(dat['standard error'][str(signal_to_noises[0])]), absolute_sigma=True)
@@ -645,7 +645,7 @@ for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
 ax.set_xlabel('Frequency (Hz)')
 ax.set_ylabel(r'Error$^2$')
-ax.set_yscale('log', basey = 10)
+ax.set_yscale('log', base = 10)
 
 #Performing fit
 fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])],\
@@ -682,7 +682,7 @@ for item in ([ax.title, ax.xaxis.label, ax.yaxis.label]):
     item.set_fontsize(17)
 ax.set_xlabel('Frequency (Hz)')
 ax.set_ylabel(r'Error$^2$')
-ax.set_yscale('log', basey = 10)
+ax.set_yscale('log', base = 10)
 
 #Performing fit
 fit_params_0,cov_0=so.curve_fit(powerFunc,freqs, dat['error squared'][str(signal_to_noises[0])],\
