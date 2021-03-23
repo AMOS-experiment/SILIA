@@ -37,7 +37,7 @@ These unit tests ensure certain functions are working correctly, but are not com
 
 ## Paper
 
-For more information, see 'paper/manuscript.pdf' which is a draft of our paper. Note that this manuscript has not yet been published and is not the final version of the paper, it is only on the GitHub for reference. 
+Our paper should be online soon!
 
 Run the scripts in the 'paper' folder to replicate our results in figures 2-5, 9. There is a quick script that should run within 15 minutes - 1 hour on a laptop computer and will approximately replicate our figures (figures 4 and 5 might not be exact). The full replication script will take longer, but will more exactly replicate the figures seen in the paper. There is a script to replicate our experimental results in figures 7 and 8 along with our experimental data in the following google drive folder - https://drive.google.com/drive/folders/1jAotoEDoEJWXhmoS94Wsp2U8re8pXLOL?usp=sharing
  
